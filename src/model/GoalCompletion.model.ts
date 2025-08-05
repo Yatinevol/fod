@@ -7,7 +7,7 @@ export interface GoalCompletionI{
     userId: Types.ObjectId | User;
     goalId: Types.ObjectId | GoalI;
     date: string; // "YYYY-MM-DD"
-    completed: boolean;
+    isCompleted: boolean;
   }
 
 const GoalCompletionSchema = new Schema<GoalCompletionI>({
@@ -25,7 +25,7 @@ const GoalCompletionSchema = new Schema<GoalCompletionI>({
         type: String, // Use ISO date string like "2025-08-03"
         required: true,
       },
-      completed: {
+      isCompleted: {
         type: Boolean,
         default: false,
       },
