@@ -7,7 +7,7 @@ export interface GoalI{
     title: string;
     category: string;
     createdAt?: Date;
-
+    isActive? : boolean
 }
 
 const GoalSchema = new Schema({
@@ -27,6 +27,11 @@ const GoalSchema = new Schema({
         type:String,
         trim: true,
         required: true
+    },
+
+    isActive:{
+        type: Boolean,
+        default: true
     }
 
 },{timestamps: true})
