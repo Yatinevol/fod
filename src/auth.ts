@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials"
 import { dbConnect } from "./lib/dbConnect"
 import UserModel from "./model/User.model";
 import bcrypt from "bcryptjs";
+
  
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [Credentials({
@@ -27,8 +28,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const user = await UserModel.findOne({
             $or:[{email: credentials.identifier}, 
               {username: credentials.identifier}]
-          })
+          }).select("-password")
 
+          console.log("user send to token and session:",user);
           if(!user){
             throw new Error("no user found with this email")
           }
@@ -49,7 +51,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 })],
 
   callbacks: {
+    async jwt({ token, user}) {
+      if(user){
+        token._id = user._id
+        token.username = user.username
+      }
+      return token
+    },
 
+    async session({ session, token}) {
+      if(token){
+        session.user._id = token._id?.toString()
+        session.user.username = token.username as string
+      }
+      return session
+    },
+    
   },
 
   pages: {
