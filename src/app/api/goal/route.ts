@@ -3,6 +3,7 @@ import { dbConnect } from "@/lib/dbConnect";
 import GoalModel from "@/model/Goal.model";
 import { User } from "next-auth";
 import { NextRequest } from "next/server";
+import { success } from "zod";
 
 export async function POST(request:NextRequest) {
     await dbConnect()
@@ -58,6 +59,62 @@ export async function POST(request:NextRequest) {
     }
 }
 
-export async function GET(request:NextRequest) {
-    
-}
+export async function GET(request:NextRequest,{params}:{params: {category:string}}) {
+    const category = params.category
+    await dbConnect()
+    try {
+        const session = await auth()
+        if(!session || !session.user){
+            return Response.json({
+                success: false,
+                message: "Not Authenticated"
+            },{status:401})
+        }
+
+        const user:User = session.user 
+
+        const allgoals = await GoalModel.aggregate([
+            {$match: {category: category, isActive:true, userId: user._id}},
+            {$sort: {createdAt: -1}},
+            {
+                $group:{
+                    _id: "$category",
+                    goals:{
+                        $push:{
+                            _id: "$_id",
+                            title: "$title",
+
+                        }
+                    }
+                }
+            },{
+                $project:{
+                    _id: 0,
+                    category : "$_id",
+                    goals: 1
+                }
+            }
+
+
+        ])
+
+        if(!allgoals){
+            return Response.json({
+                success: false,
+                message: "category not found"
+            },{status: 500})
+        }
+
+        return Response.json({
+            success: true,
+            message: "Retrieved all goals successfully!",
+            goals: allgoals[0] || {category , goals:[]}
+        },{status: 200})
+    } catch (error) {
+        console.error("cannot find the goals:",error)
+        return Response.json({
+            success: false,
+            message: "category not found"
+        },{status: 500})
+    }
+}   
