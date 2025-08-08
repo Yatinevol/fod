@@ -3,7 +3,7 @@ import { dbConnect } from "@/lib/dbConnect";
 import GoalModel from "@/model/Goal.model";
 import { User } from "next-auth";
 import { NextRequest } from "next/server";
-import { success } from "zod";
+
 
 export async function POST(request:NextRequest) {
     await dbConnect()
@@ -118,3 +118,29 @@ export async function GET(request:NextRequest,{params}:{params: {category:string
         },{status: 500})
     }
 }   
+
+// mongodb: different ways: 
+// 1
+// const goals = await Goal.find({
+//     category: category,
+//     status: "active"
+//   });
+
+//   res.status(200).json({
+//     category: category,
+//     goals: goals.map(goal => ({
+//       title: goal.title,
+//       description: goal.description,
+//       _id: goal._id,
+//     }))
+
+// 2
+// const goals = await Goal.find({
+//     category,
+//     isActive: true
+//   }).select("title isActive");
+
+//   res.status(200).json({
+//     category,
+//     goals
+//   });
