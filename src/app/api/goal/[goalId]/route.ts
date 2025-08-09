@@ -5,6 +5,7 @@ import { dbConnect } from "@/lib/dbConnect";
 import GoalModel from "@/model/Goal.model";
 import { User } from "next-auth";
 import { NextRequest } from "next/server";
+import { success } from "zod";
 
 export async function DELETE(request:NextRequest,{params}:{params: {goalId:string}}) {
     const goalId = params.goalId
@@ -40,5 +41,71 @@ export async function DELETE(request:NextRequest,{params}:{params: {goalId:strin
             success: false,
             message: "Error deleting message"
         },{status: 500})
+    }
+}
+
+export async function PATCH(request:NextRequest,{params}:{params:{goalId:string}}) {
+    const goalId = params.goalId
+    const {isActive, title} = await request.json()
+
+    await dbConnect()
+    try {
+        const session = await auth()
+        if(!session || !session.user){
+            return Response.json({
+                success: false,
+                message: "Not Authenticated"
+            },{status: 400})
+        }
+
+        const user:User = session.user
+
+        const update: any  = {}
+        // an array to return values if they are defined:
+        let updatedFields = []
+
+        if(isActive !== undefined) {
+            update.isActive = isActive 
+            updatedFields.push("status")
+        }
+        if(title !== undefined) {
+            update.title = title
+            updatedFields.push("Title")
+            
+        }
+
+        if(!title && !isActive){
+            return Response.json({
+                success: false,
+                message: "Nothing found to update"
+            },{status: 400})
+        }
+        const updatedGoal = await GoalModel.findOneAndUpdate({
+            _id: goalId,
+            userId : user._id
+        },{
+            $set: update
+        },
+        {
+            new: true
+        })
+
+        if(!updatedGoal){
+            return Response.json({
+            success: false,
+            message: "Nothing found to update"
+            },{status: 400})
+        }
+
+        return Response.json({
+            success: true,
+            message: `Updated ${updatedFields.join(" and ")} successfully`
+        },{status: 200})
+    } catch (error) {
+        console.error("Something went wrong, updating the goal",error)
+        return Response.json({
+            success: false,
+            message: "Nothing found to update"
+            },{status: 500})
     }
 }
