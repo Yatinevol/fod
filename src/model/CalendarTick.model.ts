@@ -1,6 +1,6 @@
 import mongoose,{Schema, Types} from "mongoose";
 import { User } from "./User.model";
-import  { GoalI } from "./Goal.model";
+
 
 export interface CalendarTick{
     userId: Types.ObjectId | User; 
