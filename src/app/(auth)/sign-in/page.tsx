@@ -37,7 +37,7 @@ const SignIn = () => {
         }
      }
      if(result?.url){
-      router.replace("/dashboard")
+      router.replace("/goal")
      }
   }
   return (

@@ -3,7 +3,6 @@ import Credentials from "next-auth/providers/credentials"
 import { dbConnect } from "./lib/dbConnect"
 import UserModel from "./model/User.model";
 import bcrypt from "bcryptjs";
-import { email, string } from "zod";
 
  
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -26,9 +25,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     authorize: async (credentials:any, req): Promise<any> =>{
         await dbConnect();
         try {
-          console.log(credentials.identifier);
-          console.log(credentials.identifier.email);
-          console.log(credentials.password);
+          // console.log(credentials.identifier);
+          // console.log(credentials.identifier.email);
+          // console.log(credentials.password);
           const user = await UserModel.findOne({
             $or:[{email: credentials.identifier}, 
               {username: credentials.identifier}]
@@ -44,6 +43,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             throw new Error("incorrect password")
           }
           else{
+           
             user.password = ""
             return user
           }
@@ -58,7 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user}) {
       if(user){
-        token._id = user._id
+        token._id = user._id?.toString()
         token.username = user.username
       }
       return token
