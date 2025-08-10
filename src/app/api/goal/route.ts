@@ -11,6 +11,7 @@ export async function POST(request:NextRequest) {
         // it is imp to check authentication api routes so check session exists or not.
 
         const session = await auth()
+        console.log("session",session);
         if(!session || !session.user){
             return Response.json({
                 success: false,
@@ -40,7 +41,8 @@ export async function POST(request:NextRequest) {
         const goalCreated = await GoalModel.create({
             title,
             category,
-            userId: user._id
+            userId: user._id,
+            isActive: true
         })
 
        return Response.json({
