@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 type ConnectionObject= {
     isConnected? : number
 }
+const DBNAME = "fod"
 const connection:ConnectionObject = {}
 export const dbConnect = async function():Promise<void>{
     if(connection.isConnected){
@@ -10,7 +11,7 @@ export const dbConnect = async function():Promise<void>{
         return
     }
     try {
-        const db = await mongoose.connect(`${process.env.MONGODB_URI}`)
+        const db = await mongoose.connect(process.env.MONGODB_URI || "")
         connection.isConnected = db.connections[0].readyState
         console.log("DB connected successfully!!!!");
         
