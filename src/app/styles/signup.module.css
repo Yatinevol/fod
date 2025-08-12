@@ -1,0 +1,13 @@
+.signup {
+    min-height: 100vh;
+    background-image: url("/backgroundImages/white.png"); 
+    /* image in public folder */
+    /* background-color: black; */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
