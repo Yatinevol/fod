@@ -1,35 +1,33 @@
-'use client'
+"use client"
 import { Button } from '@/components/ui/button'
-import { Form, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { signInSchema } from '@/schemas/signInSchema'
-import {zodResolver} from "@hookform/resolvers/zod"
+import { zodResolver } from '@hookform/resolvers/zod'
 import { signIn } from 'next-auth/react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import React from 'react'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import * as z from 'zod'
-
 const SignIn = () => {
   const router = useRouter()
-  // const [isSubmitting, setIsSubmitting] = useState(false)
-  const form = useForm<z.infer<typeof signInSchema>>({
-    resolver : zodResolver(signInSchema),
+  const form = useForm({
+    resolver: zodResolver(signInSchema),
     defaultValues:{
-      identifier: '',
-      password : ''
+      identifier: "",
+      password: ""
     }
   })
-  const onSubmit = async(data:z.infer<typeof signInSchema>)=>{
-    const result = await signIn('credentials',{
-      identifier : data.identifier,
-      password : data.password,
-      redirect: false
-     })
 
-     if(result?.error){
+  const onSubmit = async(data:z.infer<typeof signInSchema>)=>{
+      const result = await signIn('credentials',{
+        identifier: data.identifier,
+        password: data.password,
+        redirect: false
+      })
+
+      if(result?.error){
         if(result.error === "CredentialsSignin"){
           toast("Login Failed",{description:"incorrect username or password"})
         }else{
@@ -41,49 +39,44 @@ const SignIn = () => {
      }
   }
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-800">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
-        <div className="text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-6">
-            Welcome Back to True Feedback
+    <div className='min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center p-4'>
+      <div className='w-full max-w-md backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl'>
+        <div className='text-center mb-8'>
+          <h1 className='text-3xl font-bold text-white mb-2'>
+            Sign in to your Fod account
           </h1>
-          <p className="mb-4">Sign in to continue your secret conversations</p>
         </div>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              name="identifier"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email/Username</FormLabel>
-                  <Input {...field} />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="password"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <Input type="password" {...field} />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button className='w-full' type="submit">Sign In</Button>
-          </form>
+        <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+          <FormField
+            name="identifier"
+            control={form.control}
+            render={({field})=>(
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-white/90">Email/Username</FormLabel>
+                <input className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200" placeholder='Username or email address'  {...field}/>
+              </FormItem>
+            )}
+          />
+          <FormField
+            name="password"
+            control={form.control}
+            render={({field})=>(
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-white/90">Password</FormLabel>
+                <input type='password' className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200" placeholder='Password' {...field}/>
+              </FormItem>
+            )}
+          />
+          <Button
+                
+                type="submit"
+                className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-transparent disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                Sign in
+              </Button>
+        </form>
         </Form>
-        <div className="text-center mt-4">
-          <p>
-            Not a member yet?{' '}
-            <Link href="/sign-up" className="text-blue-600 hover:text-blue-800">
-              Sign up
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
   )

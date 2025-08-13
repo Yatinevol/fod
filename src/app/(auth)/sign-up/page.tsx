@@ -1,7 +1,7 @@
 "use client"
 import styles from  '@/app/styles/signup.module.css'
 import { Button } from '@/components/ui/button'
-import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
+import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { signUpSchema } from '@/schemas/signUpSchema'
 import { ApiResponse } from '@/Types/ApiResponse'
