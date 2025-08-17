@@ -1,14 +1,15 @@
 "use client"
-import React, { useState } from 'react'
+import DateTime from '@/components/DateTime';
+import React, { useEffect, useState } from 'react'
 
 const Goal = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
+  
   return (
     <div>
-      <div>
-        <h1 className='text-2xl'>Tasks</h1>
-      </div>
+      <header className='flex justify-between items-center'>
+        <h1 className="text-2xl font-bold">Tasks</h1>
+        <DateTime/>
+      </header>
     </div>
   );
 }
