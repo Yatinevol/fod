@@ -1,15 +1,12 @@
-import { Calendar, Calendar1, Calendar1Icon, CalendarClock, Goal, LayoutDashboard, ListChecks, Menu, Timer, X } from 'lucide-react';
+import { Calendar1, LayoutDashboard, ListChecks,Timer, X } from 'lucide-react';
 import Link from 'next/link';
-import React, { useState } from 'react'
 
-const Sidebar = ({isOpen}:any) => {
-  const [isopen, setIsOpen] = useState(false)
+const Sidebar = ({isOpen, setIsOpen}:any) => {
   
-
   return (
     <div className='relative'>
-        <button onClick={()=> setIsOpen(!isopen)} className='p-2 text-white rounded-md relative top-4 left-4 z-50'>
-        {isopen ? (
+        <button onClick={()=> setIsOpen(!isOpen)} className='p-2 text-white rounded-md relative top-4 left-4 z-50'>
+        {isOpen ? (
           <X size={24} color='black' className="transition-transform duration-300 ease-in-out" />
         ) : (
           <Calendar1
@@ -22,7 +19,7 @@ const Sidebar = ({isOpen}:any) => {
 
         {/* sidebar */}
         <div className={`fixed top-0 left-0 h-full bg-gray-300 text-white w-64 p-10 transition-transform duration-300 ease-in-out z-40
-        ${isopen ? "translate-x-0" : "-translate-x-full"}`}>
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
 
           <ul className='mt-8 space-y-4'>
           <li>
