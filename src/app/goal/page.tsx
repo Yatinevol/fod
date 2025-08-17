@@ -1,6 +1,4 @@
 "use client"
-import Sidebar from '@/components/Sidebar';
-import { Menu, X } from 'lucide-react';
 import React, { useState } from 'react'
 
 const Goal = () => {
@@ -8,7 +6,9 @@ const Goal = () => {
 
   return (
     <div>
-      <Sidebar isOpen="true"/>
+      <div>
+        <h1 className='text-2xl'>Tasks</h1>
+      </div>
     </div>
   );
 }
