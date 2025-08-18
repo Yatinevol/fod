@@ -5,12 +5,12 @@ const Sidebar = ({isOpen, setIsOpen}:any) => {
   
   return (
     <div className='relative'>
-        <button onClick={()=> setIsOpen(!isOpen)} className='p-2 text-white rounded-md relative top-4 left-4 z-50'>
+        <button onClick={()=> setIsOpen(!isOpen)} className='p-2 text-white rounded-md relative top-4 left-4 z-50  bg-gray-100'>
         {isOpen ? (
-          <X size={24} color='black' className="transition-transform duration-300 ease-in-out" />
+          <X size={24} color='black' className="transition-transform duration-300 ease-in-out cursor-pointer" />
         ) : (
           <Calendar1
-            className="hover:bg-gray-400 rounded"
+            className="rounded cursor-move"
             color="black"
             size={26}
           />
