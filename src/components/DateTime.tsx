@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 
 
-const DateTime = () => {
+const DateTime = ({className}:{className:string}) => {
   const [dateTime, setDateTime] = useState(new Date());
   useEffect(()=>{
     const interval = setInterval(()=>{
@@ -25,7 +25,7 @@ const DateTime = () => {
     minute: "2-digit"
   })
   return (
-    <div className='flex items-center justify-end gap-2 text-gray-600'>
+    <div className={`flex items-center justify-end gap-2 text-black ${className}`}>
      <span>{day}</span>
      <span>{time}</span>
     </div>
