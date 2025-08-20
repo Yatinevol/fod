@@ -1,86 +1,179 @@
 "use client";
 import DateTime from "@/components/DateTime";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, X } from "lucide-react";
 import React, { useState } from "react";
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from "@mui/material/FormControlLabel";
 import { green } from "@mui/material/colors";
 
 const Goal = () => {
-  const [category, setCategory] = useState("");
-  const [categories, setCategories] = useState(["Hobbies", "Career"]);
-  const [active, setActive] = useState("Hobbies");
-  const [goals, setGoals] = useState(["singing", "badminton", "gaming"])
-  return (
-    <div className="max-w-6xl mx-auto px-6">
-      <header className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Tasks</h1>
+  const [category, setCategory] = useState(""); 
+// for search input
+const [categories, setCategories] = useState(["Today"]); 
 
-        <div className="space-x-6">
+const handleUiCategory = ()=>{
+  if(category.trim() !=="" && !categories.includes(category)){
+    setCategories([...categories, category]);
+    setCategory("")
+  }
+}
+// list of categories
+
+const [active, setActive] = useState("Hobbies"); 
+// currently selected category
+
+const [goals, setGoals] = useState(["singing", "badminton", "gaming"]); 
+// tasks list
+
+const [showTaskModal, setShowTaskModal] = useState(false); 
+// controls add-task modal visibility
+
+const [newTask, setNewTask] = useState(""); 
+const [taskCategory, setTaskCategory] = useState(categories[0]); 
+// default: first category
+
+// input value inside add-task modal
+const handleAddTask = () => {
+  if (newTask.trim() !== "") {
+    setGoals([...goals, newTask]);
+    setNewTask("");
+    setShowTaskModal(false);
+  }
+};
+  return (
+    <div className="max-w-6xl mx-auto px-6 min-h-screen relative">
+    
+    <header className="flex flex-col gap-6 md:flex-row md:justify-between md:items-center">
+      {/* Left section: Title + Search */}
+      <div className="flex items-center gap-4 w-full md:w-auto">
+        <h1 className="text-2xl font-bold whitespace-nowrap">Tasks</h1>
+        
+        {/* Search Bar */}
+        <div className="relative w-full max-w-md">
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Search tasks..."
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="bg-white p-3 w-96 rounded-xl"
+            className="w-full bg-white border border-gray-200 pl-10 pr-4 py-2 rounded-xl focus:ring-2 focus:ring-violet-500 focus:outline-none shadow-sm"
           />
-
-          <button className="bg-violet-600 text-white px-3 py-2 cursor-pointer rounded-sm">
-            Add Category
-          </button>
-        </div>
-
-        <DateTime className="font-bold" />
-      </header>
-
-      <div className="mt-11 text-xl space-x-6">
-        {categories.map((each) => (
-          <button
-            key={each}
-            onClick={() => setActive(each)}
-            className="relative pb-1"
+          <svg
+            className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <span
-              className={
-                active === each ? "text-black font-semibold" : "text-gray-500"
-              }
-            >
-              {each}
-            </span>
-
-            {/* underline */}
-            <span
-              className={`absolute rounded-4xl left-0 bottom-0 h-[2px] 
-            bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 
-            transition-all duration-300 
-            ${active === each ? "w-full" : "w-0"}`}
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"
             />
-          </button>
-        ))}
+          </svg>
+        </div>
       </div>
 
-      <div className="mt-8 space-y-5">
-        {
-          goals.map((each)=>(
-            <div
-            key={each}
-            className="p-6 flex items-center justify-between border bg-white rounded-lg w-3xl"
-            >
-              <div className="space-x-5 font-bold text-xl">
-              <FormControlLabel 
-              control=
-              {<Checkbox color="secondary"  
-                sx={{color: "#81C784",'&.Mui-checked':{color: "#4CAF50"}}}
-                />
-              } 
-              label="Singing" />
-               <span>{each}</span>
-              </div>
-              <MoreHorizontal className="cursor-pointer"/>
-            </div>
-          ))
-        }
+      {/* Right section: Buttons */}
+      <div className="flex items-center gap-3">
+        <button className="border border-violet-600 text-violet-600 px-4 py-2 rounded-lg font-medium hover:bg-violet-50 transition"
+        onClick={handleUiCategory}
+        >
+          Add Category
+        </button>
+        <button
+          onClick={() => setShowTaskModal(true)}
+          className="bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold shadow-sm hover:bg-violet-500 transition"
+        >
+          + Add Task
+        </button>
+        <DateTime className="font-bold hidden md:block" />
       </div>
+    </header>
+
+    {/* Category Tabs */}
+    <div className="flex items-center gap-6 mt-8 overflow-x-auto scrollbar-hide pl-1">
+      {categories.map((each) => (
+        <button
+          key={each}
+          onClick={() => setActive(each)}
+          className="relative pb-1"
+        >
+          <span
+            className={
+              active === each
+                ? "text-black font-semibold"
+                : "text-gray-500 hover:text-gray-700"
+            }
+          >
+            {each}
+          </span>
+
+          {/* Animated underline */}
+          <span
+            className={`absolute rounded-4xl left-0 bottom-0 h-[2px] 
+              bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 
+              transition-all duration-300 
+              ${active === each ? "w-full" : "w-0"}`}
+          />
+        </button>
+      ))}
+    </div>
+  
+        {/* 🟣 Modal for Adding Task */}
+        {showTaskModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-2xl shadow-lg w-[400px] relative">
+      {/* Close button */}
+      <button
+        onClick={() => setShowTaskModal(false)}
+        className="absolute top-3 right-3 text-gray-500 hover:text-black"
+      >
+        <X size={20} />
+      </button>
+
+      <h2 className="text-xl font-bold mb-4">Add New Task</h2>
+
+      {/* Task name input */}
+      <input
+        type="text"
+        placeholder="Enter task name..."
+        value={newTask}
+        onChange={(e) => setNewTask(e.target.value)}
+        className="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-violet-500"
+      />
+
+      {/* Category selector */}
+      <label className="block text-sm font-medium mb-2">Choose Category</label>
+      <select
+        value={taskCategory}
+        onChange={(e) => setTaskCategory(e.target.value)}
+        className="w-full p-3 border rounded-lg mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+      >
+        {categories.map((cat) => (
+          <option key={cat} value={cat}>
+            {cat}
+          </option>
+        ))}
+      </select>
+
+      {/* Save button */}
+      <button
+        onClick={() => {
+          if (newTask.trim() !== "") {
+            setGoals([...goals, `${newTask} (${taskCategory})`]);
+            setNewTask("");
+            setTaskCategory(categories[0]); // reset after save
+            setShowTaskModal(false);
+          }
+        }}
+        className="w-full bg-violet-600 text-white py-2 rounded-lg font-semibold hover:bg-violet-500"
+      >
+        Save Task
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 };
