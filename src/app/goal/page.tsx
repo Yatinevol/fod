@@ -1,10 +1,12 @@
 "use client";
 import DateTime from "@/components/DateTime";
 import { MoreHorizontal, X } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from "@mui/material/FormControlLabel";
 import { green } from "@mui/material/colors";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const Goal = () => {
   const [category, setCategory] = useState(""); 
@@ -17,20 +19,24 @@ const handleUiCategory = ()=>{
     setCategory("")
   }
 }
-// list of categories
 
-const [active, setActive] = useState("Hobbies"); 
 // currently selected category
+const [active, setActive] = useState("Today"); 
 
-const [goals, setGoals] = useState(["singing", "badminton", "gaming"]); 
-// tasks list
-
-const [showTaskModal, setShowTaskModal] = useState(false); 
-// controls add-task modal visibility
+const [showTaskModal, setShowTaskModal] = useState(false);
 
 const [newTask, setNewTask] = useState(""); 
+
+// options while adding task:
 const [taskCategory, setTaskCategory] = useState(categories[0]); 
-// default: first category
+
+const [goals, setGoals] = useState(["singing", "badminton", "gaming"]); 
+
+const router = useRouter()
+
+// checking authorization of user:
+const {data: session, status} = useSession();
+
 
 // input value inside add-task modal
 const handleAddTask = () => {
@@ -39,6 +45,13 @@ const handleAddTask = () => {
     setNewTask("");
     setShowTaskModal(false);
   }
+
+useEffect(()=>{
+  if(!session || !session.user){
+    router.push('/sign-in')
+    return
+  }
+},[])
 };
   return (
     <div className="max-w-6xl mx-auto px-6 min-h-screen relative">
@@ -97,7 +110,7 @@ const handleAddTask = () => {
         <button
           key={each}
           onClick={() => setActive(each)}
-          className="relative pb-1"
+          className="relative pb-1 cursor-pointer"
         >
           <span
             className={
@@ -121,7 +134,7 @@ const handleAddTask = () => {
     </div>
   
         {/* 🟣 Modal for Adding Task */}
-        {showTaskModal && (
+  {showTaskModal && (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
     <div className="bg-white p-6 rounded-2xl shadow-lg w-[400px] relative">
       {/* Close button */}
@@ -159,14 +172,7 @@ const handleAddTask = () => {
 
       {/* Save button */}
       <button
-        onClick={() => {
-          if (newTask.trim() !== "") {
-            setGoals([...goals, `${newTask} (${taskCategory})`]);
-            setNewTask("");
-            setTaskCategory(categories[0]); // reset after save
-            setShowTaskModal(false);
-          }
-        }}
+        onClick={handleAddTask}
         className="w-full bg-violet-600 text-white py-2 rounded-lg font-semibold hover:bg-violet-500"
       >
         Save Task
@@ -174,6 +180,39 @@ const handleAddTask = () => {
     </div>
   </div>
 )}
+
+  {/* Task List by Active Category */}
+<div className="mt-8 space-y-3">
+  {goals.filter((task) => task.includes(`(${active})`)).length === 0 ? (
+    <div className="text-center text-gray-500 py-12">
+      <p className="text-lg font-semibold">No tasks in “{active}” yet</p>
+      <p className="text-sm">Click <span className="text-violet-600 font-semibold">+ Add Task</span> to create one</p>
+    </div>
+  ) : (
+    goals
+      .filter((task) => task.includes(`(${active})`))
+      .map((task, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-between p-3 border rounded-xl shadow-sm hover:shadow-md transition bg-white"
+        >
+          <FormControlLabel
+            control={
+              <Checkbox
+                sx={{
+                  color: green[800],
+                  "&.Mui-checked": { color: green[600] },
+                }}
+              />
+            }
+            label={task.replace(`(${active})`, "").trim()}
+          />
+          <MoreHorizontal className="text-gray-400 cursor-pointer" />
+        </div>
+      ))
+  )}
+</div>
+
     </div>
   );
 };
