@@ -7,6 +7,9 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import { green } from "@mui/material/colors";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import axios, { AxiosError } from "axios";
+import { toast } from "sonner";
+import { ApiResponse } from "@/Types/ApiResponse";
 
 const Goal = () => {
   const [category, setCategory] = useState(""); 
@@ -39,12 +42,26 @@ const {data: session, status} = useSession();
 
 
 // input value inside add-task modal
-const handleAddTask = () => {
-  if (newTask.trim() !== "") {
-    setGoals([...goals, newTask]);
+const handleAddTask =async () => {
+  try {
+    if(newTask.trim() !== ""){
+      const response = await axios.post<ApiResponse>('/api/goal',{title:newTask, category:taskCategory})
+  
+      if(response.data.success){
+        toast("Task added successfully")
+        console.log(response.data);
+      }
+      setActive(taskCategory);
+      setGoals([...goals,`${newTask} (${taskCategory})`])
+    }
+  } catch (error) {
+    const axiosError = error as AxiosError<ApiResponse>
+    toast(axiosError.response?.data.message,{description: axiosError.response?.data.message ??'Failed to fetch message settings',})
+  }finally{
     setNewTask("");
-    setShowTaskModal(false);
+    setShowTaskModal(false)
   }
+};
 
 useEffect(()=>{
   if(!session || !session.user){
@@ -52,7 +69,6 @@ useEffect(()=>{
     return
   }
 },[])
-};
   return (
     <div className="max-w-6xl mx-auto px-6 min-h-screen relative">
     
