@@ -37,7 +37,7 @@ export async function POST(request:NextRequest) {
         }
 
         await CategoryModal.create({
-            category,
+            name: category,
             userId: user._id
         })
         return Response.json({
@@ -53,3 +53,41 @@ export async function POST(request:NextRequest) {
     }
 }
 
+export async function GET(request:NextRequest) {
+    try {
+        await dbConnect()
+        const session = await auth()
+
+        if(!session || !session.user){
+            return Response.json({
+                success: false,
+                message: "Not Authenticated"
+            },{status: 401})
+        }
+
+        const user:User = session.user
+        
+        const categories = await CategoryModal.find({
+            userId: user._id,
+        })
+
+        if(categories.length===0){
+            return Response.json({
+                success: false,
+                message: "No category added yet"
+            },{status: 404})
+        }
+
+         return Response.json({
+            success: true,
+            message: "Successfully fetched all the categories",
+            categories
+        },{status: 200})
+    } catch (error) {
+        console.error("GET /api/category error:", error);
+        return Response.json(
+          { success: false, message: "Something went wrong" },
+          { status: 500 }
+        );
+    }
+}
