@@ -16,11 +16,23 @@ const Goal = () => {
 // for search input
 const [categories, setCategories] = useState(["Today"]); 
 
-const handleUiCategory = ()=>{
-  if(category.trim() !=="" && !categories.includes(category)){
-    setCategories([...categories, category]);
+const handleUiCategory =async ()=>{
+  try {
+    if(category.trim() !=="" && !categories.includes(category)){
+      setCategories([...categories, category]);
+      }
+  
+    const response = await axios.post<ApiResponse>('/api/category',{category})
+    if(response.data.success){
+      toast(`Created Category ${category}`)
+    }
+  } catch (error) {
+    const axiosError = error as AxiosError<ApiResponse>
+    toast(axiosError.response?.data.message,{description: axiosError.response?.data.message ??'Failed to fetch categories',})
+  }finally{
     setCategory("")
   }
+
 }
 
 // currently selected category
@@ -62,12 +74,23 @@ const handleAddTask =async () => {
     setShowTaskModal(false)
   }
 };
-
+const handleGetCategories = async()=>{
+    try {
+      const response = await axios.get<ApiResponse>('/api/category')
+      if(response.data.success){
+        console.log("get categories:",response.data.categories);
+      }
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse>
+    toast(axiosError.response?.data.message,{description: axiosError.response?.data.message ??'Failed to fetch message settings',})
+    }
+}
 useEffect(()=>{
   if(!session || !session.user){
     router.push('/sign-in')
     return
   }
+  handleGetCategories();
 },[])
   return (
     <div className="max-w-6xl mx-auto px-6 min-h-screen relative">

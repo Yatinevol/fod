@@ -4,4 +4,5 @@ export interface ApiResponse{
     date? : string;
     title? : string;
     category? : string;
+    categories?: string;
 }

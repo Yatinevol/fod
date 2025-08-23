@@ -81,7 +81,7 @@ export async function GET(request:NextRequest) {
          return Response.json({
             success: true,
             message: "Successfully fetched all the categories",
-            categories
+            data: categories
         },{status: 200})
     } catch (error) {
         console.error("GET /api/category error:", error);
