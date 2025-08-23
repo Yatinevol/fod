@@ -78,7 +78,13 @@ const handleGetCategories = async()=>{
     try {
       const response = await axios.get<ApiResponse>('/api/category')
       if(response.data.success){
-        console.log("get categories:",response.data.categories);
+        
+        const apiCategories = response.data.categories?.map((each:any)=>(each.name)) ?? []
+
+        const categoryNames = ["Today",...apiCategories.filter(each=>each!=="Today")]
+        console.log("get categories:",categories);
+
+        setCategories(categoryNames);
       }
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>
