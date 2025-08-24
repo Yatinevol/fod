@@ -5,7 +5,8 @@ import { User } from "next-auth"
 import { NextRequest } from "next/server"
 
 export async function GET(request:NextRequest,{params}:{params: {category:string}}) {
-    const category = params.category
+    const category = await params.category
+    // console.log("category: ",category);
     await dbConnect()
     try {
         const session = await auth()
@@ -18,42 +19,25 @@ export async function GET(request:NextRequest,{params}:{params: {category:string
 
         const user:User = session.user 
 
-        const allgoals = await GoalModel.aggregate([
-            {$match: {category: category, isActive:true, userId: user._id}},
-            {$sort: {createdAt: -1}},
-            {
-                $group:{
-                    _id: "$category",
-                    goals:{
-                        $push:{
-                            _id: "$_id",
-                            title: "$title",
+        const goals = await GoalModel.find({
+            category,
+            isActive: true,
+            userId: user._id
+          })
+          .sort({ createdAt: -1 })
+          .select("_id title");
 
-                        }
-                    }
-                }
-            },{
-                $project:{
-                    _id: 0,
-                    category : "$_id",
-                    goals: 1
-                }
-            }
-
-
-        ])
-
-        if(!allgoals){
+        if(!goals){
             return Response.json({
                 success: false,
                 message: "category not found"
             },{status: 500})
         }
-
+        
         return Response.json({
             success: true,
             message: "Retrieved all goals successfully!",
-            goals: allgoals[0] || {category , goals:[]}
+            goals: goals || {category , goals:[]}
         },{status: 200})
     } catch (error) {
         console.error("cannot find the goals:",error)

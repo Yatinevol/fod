@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { ApiResponse } from "@/Types/ApiResponse";
+import { CategoryI } from "@/model/Category.model";
 
 const Goal = () => {
   const [category, setCategory] = useState(""); 
@@ -45,7 +46,7 @@ const [newTask, setNewTask] = useState("");
 // options while adding task:
 const [taskCategory, setTaskCategory] = useState(categories[0]); 
 
-const [goals, setGoals] = useState(["singing", "badminton", "gaming"]); 
+const [goals, setGoals] = useState([""]); 
 
 const router = useRouter()
 
@@ -74,6 +75,38 @@ const handleAddTask =async () => {
     setShowTaskModal(false)
   }
 };
+const handleGetTasks = async (category:any)=>{
+  try {
+    setActive(category)
+    const response = await axios.get(`/api/goal/category/${category}`)
+
+    if(response.data.success){
+      const goalsArray = response.data.goals
+     const categoryTasks= goalsArray.map((task: { title: string }) => task.
+     title)
+     console.log("categoryTasks: ",categoryTasks);
+      setGoals([...categoryTasks])
+    }else{
+      toast("Failed to fetch tasks", {
+        description: response.data.message ?? "Unknown error occurred",
+      });
+    }
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message?: string }>;
+
+    // Prefer API-provided error message if available
+    const errorMessage =
+      axiosError.response?.data?.message ||
+      axiosError.message ||
+      "Something went wrong while fetching tasks";
+
+    console.error("Error fetching tasks:", errorMessage);
+
+    toast("Error", {
+      description: errorMessage,
+    });
+  }
+}
 const handleGetCategories = async()=>{
     try {
       const response = await axios.get<ApiResponse>('/api/category')
@@ -154,7 +187,7 @@ useEffect(()=>{
       {categories.map((each) => (
         <button
           key={each}
-          onClick={() => setActive(each)}
+          onClick={() => handleGetTasks(each)}
           className="relative pb-1 cursor-pointer"
         >
           <span
@@ -228,14 +261,13 @@ useEffect(()=>{
 
   {/* Task List by Active Category */}
 <div className="mt-8 space-y-3">
-  {goals.filter((task) => task.includes(`(${active})`)).length === 0 ? (
+  {goals.length === 0 ? (
     <div className="text-center text-gray-500 py-12">
       <p className="text-lg font-semibold">No tasks in “{active}” yet</p>
       <p className="text-sm">Click <span className="text-violet-600 font-semibold">+ Add Task</span> to create one</p>
     </div>
   ) : (
     goals
-      .filter((task) => task.includes(`(${active})`))
       .map((task, index) => (
         <div
           key={index}
