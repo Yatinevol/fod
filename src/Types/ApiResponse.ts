@@ -7,4 +7,5 @@ export interface ApiResponse{
     title? : string;
     category? : string;
     categories?: CategoryI[];
+    data?: any
 }

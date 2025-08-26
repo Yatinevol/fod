@@ -4,8 +4,8 @@ import GoalModel from "@/model/Goal.model"
 import { User } from "next-auth"
 import { NextRequest } from "next/server"
 
-export async function GET(request:NextRequest,{params}:{params: {category:string}}) {
-    const category = await params.category
+export async function GET(request:NextRequest,context:{params: Promise<{category:string}>}) {
+    const {category} = await context.params
     // console.log("category: ",category);
     await dbConnect()
     try {

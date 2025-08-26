@@ -10,9 +10,10 @@ import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { ApiResponse } from "@/Types/ApiResponse";
-import { CategoryI } from "@/model/Category.model";
+
 
 const Goal = () => {
+  
   const [category, setCategory] = useState(""); 
 // for search input
 const [categories, setCategories] = useState(["Today"]); 
@@ -45,8 +46,12 @@ const [newTask, setNewTask] = useState("");
 
 // options while adding task:
 const [taskCategory, setTaskCategory] = useState(categories[0]); 
+type Goal = {
+  id: string;
+  title: string;
+};
 
-const [goals, setGoals] = useState([""]); 
+const [goals, setGoals] = useState<Goal[]>([]); 
 
 const router = useRouter()
 
@@ -62,10 +67,9 @@ const handleAddTask =async () => {
   
       if(response.data.success){
         toast("Task added successfully")
-        console.log(response.data);
+        // console.log(response.data);
       }
       setActive(taskCategory);
-      setGoals([...goals,`${newTask} (${taskCategory})`])
     }
   } catch (error) {
     const axiosError = error as AxiosError<ApiResponse>
@@ -82,10 +86,13 @@ const handleGetTasks = async (category:any)=>{
 
     if(response.data.success){
       const goalsArray = response.data.goals
-     const categoryTasks= goalsArray.map((task: { title: string }) => task.
-     title)
-     console.log("categoryTasks: ",categoryTasks);
+     const categoryTasks= goalsArray.map((task: {  _id:string,title: string }) =>({
+      id: task._id,
+      title: task.title
+     }))
+    //  console.log("categoryTasks: ",categoryTasks);
       setGoals([...categoryTasks])
+      console.log("task:",goals);
     }else{
       toast("Failed to fetch tasks", {
         description: response.data.message ?? "Unknown error occurred",
@@ -124,13 +131,27 @@ const handleGetCategories = async()=>{
     toast(axiosError.response?.data.message,{description: axiosError.response?.data.message ??'Failed to fetch message settings',})
     }
 }
+const handleCheckbox = async(checked:boolean,goalId:string)=>{
+  // So you can directly grab the checked boolean instead of digging into e.target.checked.
+  if(checked){
+    const response = await axios.post<ApiResponse>(`/api/calendar-streak/${goalId}`)
+    if(response.data.success){
+      console.log("calender:",response.data.data);
+    }
+  }else{
+    console.log("checkox is not checked");
+  }
+}
 useEffect(()=>{
+  if(status === "loading") return;
   if(!session || !session.user){
     router.push('/sign-in')
     return
+  }else{
+
+    handleGetCategories();
   }
-  handleGetCategories();
-},[])
+},[session])
   return (
     <div className="max-w-6xl mx-auto px-6 min-h-screen relative">
     
@@ -268,21 +289,22 @@ useEffect(()=>{
     </div>
   ) : (
     goals
-      .map((task, index) => (
+      .map((task) => (
         <div
-          key={index}
+          key={task.id}
           className="flex items-center justify-between p-3 border rounded-xl shadow-sm hover:shadow-md transition bg-white"
         >
           <FormControlLabel
             control={
               <Checkbox
+                onChange={(e,checked)=>handleCheckbox(checked,task.id)}
                 sx={{
                   color: green[800],
                   "&.Mui-checked": { color: green[600] },
                 }}
               />
             }
-            label={task.replace(`(${active})`, "").trim()}
+            label={task.title}
           />
           <MoreHorizontal className="text-gray-400 cursor-pointer" />
         </div>
