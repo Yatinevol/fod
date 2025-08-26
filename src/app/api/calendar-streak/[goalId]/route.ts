@@ -3,10 +3,11 @@ import CalendarTickModel from "@/model/CalendarTick.model";
 import GoalModel, { GoalI } from "@/model/Goal.model";
 import { User } from "next-auth";
 import { NextRequest } from "next/server";
-import { success } from "zod";
+export async function POST(request:NextRequest,context:{params: Promise<{goalId: string}>}) {
 
-export async function POST(request:NextRequest,{params}: {params:{goalId: string}}) {
-    const goalId = params.goalId
+    // new way to use params:
+
+    const {goalId} = await context.params
     try {
         const session = await auth()
         if(!session || !session.user){
