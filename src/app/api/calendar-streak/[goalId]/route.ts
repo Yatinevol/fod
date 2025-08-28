@@ -27,14 +27,17 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
         }
        const today = new Date()
        today.setHours(0,0,0,0)
-       const calendarExist = await CalendarTickModel.findOne({userId: user._id, date: today})
+       console.log("todayL",today);
+       const dateString = today.toISOString().split("T")[0]
+       console.log("dateString: ",dateString);
+       const calendarExist = await CalendarTickModel.findOne({userId: user._id, date: dateString})
         // reset logic
        if(!calendarExist){
             const newDayCalendar = new CalendarTickModel({
                 userId: user._id,
                 goals:[goalId],
                 earnedGreenTick: true,
-                date: today
+                date: dateString
             })
 
             await newDayCalendar.save()

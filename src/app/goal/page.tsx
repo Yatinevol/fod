@@ -13,7 +13,7 @@ import { ApiResponse } from "@/Types/ApiResponse";
 
 
 const Goal = () => {
-  
+  const [loading, setLoading] = useState(false)
   const [category, setCategory] = useState(""); 
 // for search input
 const [categories, setCategories] = useState(["Today"]); 
@@ -79,9 +79,11 @@ const handleAddTask =async () => {
     setShowTaskModal(false)
   }
 };
+
 const handleGetTasks = async (category:any)=>{
   try {
     setActive(category)
+    setLoading(true)
     const response = await axios.get(`/api/goal/category/${category}`)
 
     if(response.data.success){
@@ -112,9 +114,12 @@ const handleGetTasks = async (category:any)=>{
     toast("Error", {
       description: errorMessage,
     });
+  }finally{
+    setLoading(false)
   }
 }
 const handleGetCategories = async()=>{
+    setLoading(true)
     try {
       const response = await axios.get<ApiResponse>('/api/category')
       if(response.data.success){
@@ -129,6 +134,8 @@ const handleGetCategories = async()=>{
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>
     toast(axiosError.response?.data.message,{description: axiosError.response?.data.message ??'Failed to fetch message settings',})
+    }finally{
+      setLoading(false)
     }
 }
 const handleCheckbox = async(checked:boolean,goalId:string)=>{
@@ -136,8 +143,10 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
   if(checked){
     const response = await axios.post<ApiResponse>(`/api/calendar-streak/${goalId}`)
     if(response.data.success){
+      console.log("letsgo",response.data);
       console.log("calender:",response.data.data);
     }
+    
   }else{
     console.log("checkox is not checked");
   }
@@ -164,7 +173,7 @@ useEffect(()=>{
         <div className="relative w-full max-w-md">
           <input
             type="text"
-            placeholder="Search tasks...."
+            placeholder="Search tasks..."
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="w-full bg-white border border-gray-200 pl-10 pr-4 py-2 rounded-xl focus:ring-2 focus:ring-violet-500 focus:outline-none shadow-sm"
