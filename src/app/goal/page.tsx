@@ -142,6 +142,7 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
   // So you can directly grab the checked boolean instead of digging into e.target.checked.
   if(checked){
     const response = await axios.post<ApiResponse>(`/api/calendar-streak/${goalId}`)
+    // letsgo
     if(response.data.success){
       console.log("letsgo",response.data);
       console.log("calender:",response.data.data);
