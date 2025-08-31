@@ -11,7 +11,7 @@ export interface GoalCompletionI{
   }
 
 const GoalCompletionSchema = new Schema<GoalCompletionI>({
-    userId: {
+      userId: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true,

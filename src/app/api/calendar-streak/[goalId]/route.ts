@@ -8,6 +8,7 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
     // new way to use params:
 
     const {goalId} = await context.params
+    // const {earnedGreenTick} = await request?.json()
     try {
         const session = await auth()
         if(!session || !session.user){
@@ -49,11 +50,13 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
             },{status: 200})
        }
        if(calendarExist.goals.some(id=> id.toString() === goalId)){
-        
+        // calendarExist.earnedGreenTick = earnedGreenTick;
+        // await calendarExist.save();
         return Response.json({
-            success: false,
-            message: "Goal already marked green"
-          }, { status: 400 });
+            success: true,
+            message: "Goal status updated successfully",
+            data: calendarExist
+          }, { status: 200 });
         
        }
         calendarExist.goals.push(goalExists._id)
@@ -67,10 +70,11 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
         },{status: 200})
        
     } catch (error) {
-        console.error("Error changing status of calendar")
+        console.error("Error changing status of calendar:", error);
         return Response.json({
-            success:false,
-                message: "Goal calendar status"
-            },{status: 500})
+          success: false,
+          message: "Goal calendar status",
+          error: error instanceof Error ? error.message : String(error),
+        }, { status: 500 });
     }
 }
