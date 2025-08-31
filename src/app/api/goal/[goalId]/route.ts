@@ -5,7 +5,7 @@ import { dbConnect } from "@/lib/dbConnect";
 import GoalModel from "@/model/Goal.model";
 import { User } from "next-auth";
 import { NextRequest } from "next/server";
-import { success } from "zod";
+
 
 export async function DELETE(request:NextRequest,{params}:{params: {goalId:string}}) {
     const goalId = params.goalId

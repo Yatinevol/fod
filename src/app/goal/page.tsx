@@ -140,16 +140,18 @@ const handleGetCategories = async()=>{
 }
 const handleCheckbox = async(checked:boolean,goalId:string)=>{
   // So you can directly grab the checked boolean instead of digging into e.target.checked.
-  if(checked){
-    const response = await axios.post<ApiResponse>(`/api/calendar-streak/${goalId}`)
-    // letsgo
-    if(response.data.success){
-      console.log("letsgo",response.data);
-      console.log("calender:",response.data.data);
-    }
-    
-  }else{
-    console.log("checkox is not checked");
+  console.log("check value: ",checked);
+  
+  try {
+    const [calendarRes, StatusRes] = await Promise.all([
+      axios.post<ApiResponse>(`/api/calendar-streak/${goalId}`,{earnedGreenTick:checked}),
+      axios.patch<ApiResponse>(`/api/goal/goal-status/${goalId}`)
+
+    ])
+
+  } catch (error) {
+    console.error("Error updating earnedGreenTick:", error);
+
   }
 }
 useEffect(()=>{
