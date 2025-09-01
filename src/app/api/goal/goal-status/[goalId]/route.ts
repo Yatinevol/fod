@@ -3,7 +3,6 @@ import { dbConnect } from "@/lib/dbConnect";
 import GoalCompletionModel from "@/model/GoalCompletion.model";
 import { User } from "next-auth";
 import { NextRequest } from "next/server";
-import { success } from "zod";
 
 export async function PATCH(request:NextRequest,context:{params: Promise<{goalId:string}>}) {
     try {
