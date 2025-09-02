@@ -161,6 +161,10 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
 
   }
 }
+
+const handleGetTodaysGoals= async()=>{
+  
+}
 useEffect(()=>{
   if(status === "loading") return;
   if(!session || !session.user){
