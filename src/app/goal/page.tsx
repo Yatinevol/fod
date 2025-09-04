@@ -96,7 +96,7 @@ const handleGetTasks = async (category:any)=>{
      }))
     //  console.log("categoryTasks: ",categoryTasks);
       setGoals([...categoryTasks])
-      console.log("task:",goals);
+      // console.log("task:",goals);
     }else{
       toast("Failed to fetch tasks", {
         description: response.data.message ?? "Unknown error occurred",
@@ -151,7 +151,6 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
       axios.patch<ApiResponse>(`/api/goal/goal-status/${goalId}`,{isCompleted:checked})
 
     ])
-
     if(StatusRes.data.success){
       console.log("goals completed status",StatusRes.data.data);
       // setGoalsCompleted()
@@ -163,16 +162,30 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
 }
 
 const handleGetTodaysGoals= async()=>{
-  
+  try {
+    let date = new Date().toISOString().split("T")[0]
+    const response = await axios.get<ApiResponse>(`/api/goal/goal-status?date=${date}`)
+    console.log("handle get today golas", response.data.data);
+    if(response.data.success){
+      const completedToday = response.data.data
+      setGoalsCompleted(completedToday)
+      
+      console.log("goalsToday:",goalsCompleted);
+    }
+  } catch (error) {
+    console.log("error fetching todays tasks:",error);
+  }
 }
+
 useEffect(()=>{
   if(status === "loading") return;
   if(!session || !session.user){
     router.push('/sign-in')
     return
   }else{
-
     handleGetCategories();
+    handleGetTodaysGoals();
+    
   }
 },[session])
   return (
@@ -313,6 +326,7 @@ useEffect(()=>{
   ) : (
     goals
       .map((task) => (
+      
         <div
           key={task.id}
           className="flex items-center justify-between p-3 border rounded-xl shadow-sm hover:shadow-md transition bg-white"
@@ -320,7 +334,7 @@ useEffect(()=>{
           <FormControlLabel
             control={
               <Checkbox
-                // checked={true}
+                checked={}
                 onChange={(e,checked)=>handleCheckbox(checked,task.id)}
                 sx={{
                   color: green[800],
