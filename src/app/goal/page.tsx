@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { ApiResponse } from "@/Types/ApiResponse";
-import { check } from "zod";
 import { GoalCompletionI } from "@/model/GoalCompletion.model";
 
 
@@ -334,7 +333,7 @@ useEffect(()=>{
           <FormControlLabel
             control={
               <Checkbox
-                checked={}
+                checked={true}
                 onChange={(e,checked)=>handleCheckbox(checked,task.id)}
                 sx={{
                   color: green[800],
