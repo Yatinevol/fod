@@ -10,6 +10,13 @@ export interface GoalCompletionI{
     isCompleted: boolean;
   }
 
+  export interface GoalCompletionUI{
+    userId:string;
+    goalId: string;
+    date: string; // "YYYY-MM-DD"
+    isCompleted: boolean;
+  }
+
 const GoalCompletionSchema = new Schema<GoalCompletionI>({
       userId: {
         type: Schema.Types.ObjectId,
