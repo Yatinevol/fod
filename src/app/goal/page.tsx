@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { ApiResponse } from "@/Types/ApiResponse";
-import { GoalCompletionI } from "@/model/GoalCompletion.model";
+import { GoalCompletionI, GoalCompletionUI } from "@/model/GoalCompletion.model";
 
 
 const Goal = () => {
@@ -139,11 +139,19 @@ const handleGetCategories = async()=>{
       setLoading(false)
     }
 }
-const [goalsCompleted, setGoalsCompleted]  = useState<GoalCompletionI[]>([])
+const [goalsCompleted, setGoalsCompleted]  = useState<GoalCompletionUI[]>([])
 const handleCheckbox = async(checked:boolean,goalId:string)=>{
   // So you can directly grab the checked boolean instead of digging into e.target.checked.
-  console.log("check value: ",checked);
-  
+  // console.log("check value: ",checked);
+  setGoalsCompleted((prev)=>{
+    let date = new Date().toISOString().split("T")[0]
+    if(prev.some((c)=> String(c.goalId) === goalId)){
+      return prev.map((c)=>
+        String(c.goalId) === goalId ? {...c, isCompleted: checked}: c
+      );
+    }
+    return [...prev, {goalId, isCompleted: checked,date, userId:session?.user?._id ?? ""} ];
+  })
   try {
     const [calendarRes, StatusRes] = await Promise.all([
       axios.post<ApiResponse>(`/api/calendar-streak/${goalId}`),
@@ -333,7 +341,9 @@ useEffect(()=>{
           <FormControlLabel
             control={
               <Checkbox
-                checked={true}
+                checked={goalsCompleted.some((c)=>(
+                  String(c.goalId) === task.id && c.isCompleted
+                ))}
                 onChange={(e,checked)=>handleCheckbox(checked,task.id)}
                 sx={{
                   color: green[800],
