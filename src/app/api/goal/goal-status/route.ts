@@ -24,7 +24,7 @@ export async function GET(request:NextRequest) {
         const userId = new mongoose.Types.ObjectId(user._id)
         const getCompletedGoals = await GoalCompletionModel.find({userId, date: todaydate})
         console.log("getCompletedGoals",getCompletedGoals);
-        return NextResponse.json({
+        return Response.json({
             success: true,
             message:"All todays tasks status fetced",
             data: getCompletedGoals

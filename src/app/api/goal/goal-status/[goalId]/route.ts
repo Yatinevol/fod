@@ -3,6 +3,7 @@ import { dbConnect } from "@/lib/dbConnect";
 import GoalCompletionModel from "@/model/GoalCompletion.model";
 import { User } from "next-auth";
 import { NextRequest } from "next/server";
+import { format, toZonedTime } from 'date-fns-tz';
 
 export async function PATCH(request:NextRequest,context:{params: Promise<{goalId:string}>}) {
     try {
@@ -20,10 +21,15 @@ export async function PATCH(request:NextRequest,context:{params: Promise<{goalId
             },{status:400})
         }
         const user:User = session?.user
-        const today = new Date()
-        today.setHours(0,0,0,0)
-        const existingDate = today.toISOString().split("T")[0]
-        console.log("status date:",existingDate);
+        // const today = new Date()
+        // today.setHours(0,0,0,0)
+        // const existingDate = today.toISOString().split("T")[0]
+        // console.log("status date:",existingDate);
+
+        const timeZone = 'UTC';
+        const now = new Date();
+        const zonedDate =  toZonedTime(now, timeZone);
+        const existingDate = format(zonedDate, 'yyyy-MM-dd',{timeZone})
         const goalCompleted = await GoalCompletionModel.findOne({userId:user._id, goalId, date:existingDate})
 
         if(goalCompleted){
