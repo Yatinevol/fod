@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { ApiResponse } from "@/Types/ApiResponse";
-import { GoalCompletionI, GoalCompletionUI } from "@/model/GoalCompletion.model";
+import { GoalCompletionUI } from "@/model/GoalCompletion.model";
 
 
 const Goal = () => {
