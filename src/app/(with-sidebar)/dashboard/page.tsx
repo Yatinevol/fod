@@ -1,14 +1,21 @@
 "use client"
+
 import { Calendar } from '@/components/ui/calendar'
-import { enGB, enUS } from 'date-fns/locale'
+import { enGB } from 'date-fns/locale'
 import React, { useEffect, useState } from 'react'
 
 const Dashboard = () => {
   const [date, setDate] = useState<Date>()
-
+  const [isClient, setIsClient] = useState(false)
+  
   useEffect(() => {
     setDate(new Date())
+    setIsClient(true)
   }, [])
+
+  if (!isClient) {
+    return null // or a loader/spinner if you want
+  }
 
   return (
     <Calendar

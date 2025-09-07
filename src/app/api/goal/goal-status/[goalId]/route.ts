@@ -23,6 +23,7 @@ export async function PATCH(request:NextRequest,context:{params: Promise<{goalId
         const today = new Date()
         today.setHours(0,0,0,0)
         const existingDate = today.toISOString().split("T")[0]
+        console.log("status date:",existingDate);
         const goalCompleted = await GoalCompletionModel.findOne({userId:user._id, goalId, date:existingDate})
 
         if(goalCompleted){

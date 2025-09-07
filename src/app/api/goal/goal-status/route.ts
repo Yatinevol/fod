@@ -1,8 +1,9 @@
 import { auth } from "@/auth";
 import { dbConnect } from "@/lib/dbConnect";
 import GoalCompletionModel from "@/model/GoalCompletion.model";
+import mongoose from "mongoose";
 import { User } from "next-auth";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request:NextRequest) {
     try {
@@ -10,7 +11,8 @@ export async function GET(request:NextRequest) {
         const session = await auth()
         const {searchParams} = new URL(request.url)
         const date = searchParams.get("date")
-        const todaydate = date || new Date().toISOString().split("T")[0]
+        const todaydate = date;
+        console.log("Get today date:",todaydate);
         if(!session || !session.user){
             return Response.json({
                 success:false,
@@ -19,9 +21,10 @@ export async function GET(request:NextRequest) {
             },{status:400})
         }
         const user:User = session?.user
-        const getCompletedGoals = await GoalCompletionModel.find({userId:user._id, date: todaydate})
+        const userId = new mongoose.Types.ObjectId(user._id)
+        const getCompletedGoals = await GoalCompletionModel.find({userId, date: todaydate})
         console.log("getCompletedGoals",getCompletedGoals);
-        return Response.json({
+        return NextResponse.json({
             success: true,
             message:"All todays tasks status fetced",
             data: getCompletedGoals
