@@ -11,6 +11,7 @@ import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 import { ApiResponse } from "@/Types/ApiResponse";
 import { GoalCompletionUI } from "@/model/GoalCompletion.model";
+import { format, toZonedTime } from "date-fns-tz";
 
 
 const Goal = () => {
@@ -173,11 +174,11 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
 
 const handleGetTodaysGoals= async()=>{
   try {
-    let dat = new Date()
-    dat.setHours(0,0,0,0)
-    let date = dat.toISOString().split("T")[0]
-    console.log("dat",date);
-    const response = await axios.get<ApiResponse>(`/api/goal/goal-status?date=${date}`)
+    const timeZone = 'UTC';
+    const now = new Date();
+    const zonedDate =  toZonedTime(now, timeZone);
+    const existingDate = format(zonedDate, 'yyyy-MM-dd',{timeZone})
+    const response = await axios.get<ApiResponse>(`/api/goal/goal-status?date=${existingDate}`)
     console.log("handle get today golas", response.data.data);
     if(response.data.success){
       const completedToday = response.data.data
