@@ -144,7 +144,10 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
   // So you can directly grab the checked boolean instead of digging into e.target.checked.
   // console.log("check value: ",checked);
   setGoalsCompleted((prev)=>{
-    let date = new Date().toISOString().split("T")[0]
+    let dat = new Date()
+    dat.setHours(0,0,0,0)
+    let date = dat.toISOString().split("T")[0]
+    console.log("dat",date);
     if(prev.some((c)=> String(c.goalId) === goalId)){
       return prev.map((c)=>
         String(c.goalId) === goalId ? {...c, isCompleted: checked}: c
@@ -170,7 +173,10 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
 
 const handleGetTodaysGoals= async()=>{
   try {
-    let date = new Date().toISOString().split("T")[0]
+    let dat = new Date()
+    dat.setHours(0,0,0,0)
+    let date = dat.toISOString().split("T")[0]
+    console.log("dat",date);
     const response = await axios.get<ApiResponse>(`/api/goal/goal-status?date=${date}`)
     console.log("handle get today golas", response.data.data);
     if(response.data.success){
