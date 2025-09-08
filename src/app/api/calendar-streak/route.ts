@@ -1,0 +1,45 @@
+import { NextRequest } from "next/server";
+import { auth } from "@/auth";
+import { dbConnect } from "@/lib/dbConnect";
+import CalendarTickModel from "@/model/CalendarTick.model";
+import { format, toZonedTime } from "date-fns-tz";
+import mongoose from "mongoose";
+import { User } from "next-auth";
+
+export async function GET(request: NextRequest){
+    try {
+        await dbConnect();
+
+        const session = await auth()
+        if(!session || !session.user){
+            return Response.json({
+                success: true,
+                message: "Not Authorized"
+            },{status: 401})
+
+        }
+        const user:User =  session?.user
+
+        // const timeZone = 'UTC';
+        // const now = new Date();
+        // const zonedDate =  toZonedTime(now, timeZone);
+        // const dateString = format(zonedDate, 'yyyy-MM-dd',{timeZone})
+        const userId = new mongoose.Types.ObjectId(user._id)
+        const todaysGreenTickTasks = await CalendarTickModel.find({
+            userId
+        })
+
+        return Response.json({
+            success: true,
+            message: "Successfully fetched todays green tick tasks",
+            data: todaysGreenTickTasks
+        },{status: 200})
+    } catch (error) {
+        console.error("Error fetching today's green tick tasks:", error);
+        return Response.json({
+        success: false,
+        message: "Failed to fetch today's tasks",
+        error: error instanceof Error ? error.message : "Unknown error"
+        }, { status: 500 });
+    }
+}
