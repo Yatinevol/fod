@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react'
 const Dashboard = () => {
   const [date, setDate] = useState<Date>()
   const [isClient, setIsClient] = useState(false)
-  const complete = [new Date(2025,8,7), new Date(2025,8,6), new Date(2025,8,5), new Date(2025,8,4)]
+  const [complete, setComplete] = useState<Date>()
   const [todaysGreenTickTasks, setTodaysGreenTickTasks] = useState<CalendarTick[]>([])
   const handleGreenTickTasks= async()=>{
       try {
@@ -19,6 +19,13 @@ const Dashboard = () => {
         if(response.data.success){
           const greenTickArr = response.data.data;
           setTodaysGreenTickTasks(greenTickArr)
+          const completeDates = greenTickArr.map((e:CalendarTick)=>{
+            if(e.earnedGreenTick){
+              return new Date(e.date)
+            }
+          }).filter(Boolean);
+          console.log("completeDates array",completeDates);
+          setComplete(completeDates);
         }
       } catch (error) {
         
