@@ -1,8 +1,12 @@
 import { auth } from "@/auth";
+import { dbConnect } from "@/lib/dbConnect";
 import CalendarTickModel from "@/model/CalendarTick.model";
 import GoalModel, { GoalI } from "@/model/Goal.model";
+import { format, toZonedTime } from "date-fns-tz";
+import mongoose from "mongoose";
 import { User } from "next-auth";
 import { NextRequest } from "next/server";
+
 export async function POST(request:NextRequest,context:{params: Promise<{goalId: string}>}) {
 
     // new way to use params:
@@ -10,6 +14,7 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
     const {goalId} = await context.params
     // const {earnedGreenTick} = await request?.json()
     try {
+        await dbConnect();
         const session = await auth()
         if(!session || !session.user){
             return Response.json({
@@ -26,11 +31,10 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
                 message: "Activity not found"
             },{status: 400})
         }
-       const today = new Date()
-       today.setHours(0,0,0,0)
-       console.log("todayL",today);
-       const dateString = today.toISOString().split("T")[0]
-       console.log("dateString: ",dateString);
+        const timeZone = 'UTC';
+        const now = new Date();
+        const zonedDate =  toZonedTime(now, timeZone);
+        const dateString = format(zonedDate, 'yyyy-MM-dd',{timeZone})
        const calendarExist = await CalendarTickModel.findOne({userId: user._id, date: dateString})
         // reset logic
        if(!calendarExist){
@@ -78,3 +82,4 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
         }, { status: 500 });
     }
 }
+
