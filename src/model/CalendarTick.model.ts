@@ -1,11 +1,12 @@
 import mongoose,{Schema, Types} from "mongoose";
 import { User } from "./User.model";
+import { GoalI } from "./Goal.model";
 
 
 export interface CalendarTick{
     userId: Types.ObjectId | User; 
     date: Date;
-    goals: Types.ObjectId[] 
+    goals: GoalI
     earnedGreenTick: boolean;
     createdAt?: Date;
     activitiesCompleted?: number
