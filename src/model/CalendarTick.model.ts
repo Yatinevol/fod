@@ -11,6 +11,14 @@ export interface CalendarTick{
     createdAt?: Date;
     activitiesCompleted?: number
 }
+export interface PopulatedCalendarGoalI{
+    userId: Types.ObjectId | User; 
+    date: Date;
+    goals: GoalI[]
+    earnedGreenTick: boolean;
+    createdAt?: Date;
+    activitiesCompleted?: number
+}
 
 const CalenderTickSchema = new Schema<CalendarTick>({
     userId: {
