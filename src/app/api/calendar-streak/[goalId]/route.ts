@@ -24,6 +24,7 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
         }
 
         const user:User = session.user
+        const userId = new mongoose.Types.ObjectId(user._id);
         const goalExists = await GoalModel.findOne({userId:user._id, _id: goalId})
         if(!goalExists){
             return Response.json({
@@ -40,7 +41,7 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
        if(!calendarExist){
             const newDayCalendar = new CalendarTickModel({
                 userId: user._id,
-                goals:[goalExists],
+                goals:[goalId],
                 earnedGreenTick: true,
                 date: dateString
             })
@@ -63,8 +64,7 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
           }, { status: 200 });
         
        }
-       
-        calendarExist.goals.push(goalExists)
+        calendarExist.goals.push(goalExists._id);
         calendarExist.earnedGreenTick = true;
         await calendarExist.save();
 

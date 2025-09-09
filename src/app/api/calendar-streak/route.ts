@@ -27,7 +27,7 @@ export async function GET(request: NextRequest){
         const userId = new mongoose.Types.ObjectId(user._id)
         const todaysGreenTickTasks = await CalendarTickModel.find({
             userId
-        })
+        }).populate('goals','title').exec();
 
         return Response.json({
             success: true,
