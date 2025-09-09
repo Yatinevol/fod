@@ -6,7 +6,7 @@ import { GoalI } from "./Goal.model";
 export interface CalendarTick{
     userId: Types.ObjectId | User; 
     date: Date;
-    goals: GoalI
+    goals: Types.ObjectId[]
     earnedGreenTick: boolean;
     createdAt?: Date;
     activitiesCompleted?: number

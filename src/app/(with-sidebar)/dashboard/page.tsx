@@ -21,7 +21,7 @@ const Dashboard = () => {
         if(response.data.success){
           const greenTickArr = response.data.data;
           console.log("greenticck",greenTickArr);
-          console.log("lets go",todaysGreenTickTasks);
+          // console.log("lets go",todaysGreenTickTasks);
           const completeDates = greenTickArr.map((e:CalendarTick)=>{
             if(e.earnedGreenTick){
               return new Date(e.date)
