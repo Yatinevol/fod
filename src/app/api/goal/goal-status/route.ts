@@ -3,7 +3,7 @@ import { dbConnect } from "@/lib/dbConnect";
 import GoalCompletionModel from "@/model/GoalCompletion.model";
 import mongoose from "mongoose";
 import { User } from "next-auth";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 export async function GET(request:NextRequest) {
     try {

@@ -40,7 +40,7 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
        if(!calendarExist){
             const newDayCalendar = new CalendarTickModel({
                 userId: user._id,
-                goals:[goalId],
+                goals:[goalExists],
                 earnedGreenTick: true,
                 date: dateString
             })
@@ -63,7 +63,8 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
           }, { status: 200 });
         
        }
-        calendarExist.goals.push(goalExists._id)
+       
+        calendarExist.goals.push(goalExists)
         calendarExist.earnedGreenTick = true;
         await calendarExist.save();
 
