@@ -64,7 +64,7 @@ const Dashboard = () => {
   }
 
   return (
-   <div className='flex '>
+   <div className='flex space-x-8'>
     <div>
      <Calendar
       mode="single"
@@ -88,14 +88,15 @@ const Dashboard = () => {
       }}
     />
     </div>
+
     <div>
     {para && 
-      (<div>
+      (<div className='rounded-lg border text-lg bg-white p-4'>
         <h3>Tasks Completed:</h3>
         {
           // todaysGreenTickTasks.map
           dashboardTodayTask.map((e)=>(
-            <div key={e}>
+            <div key={e} >
               <h1>{e}</h1>
             </div>
           ))
