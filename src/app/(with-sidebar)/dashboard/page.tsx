@@ -90,19 +90,32 @@ const Dashboard = () => {
     </div>
 
     <div>
-    {para && 
-      (<div className='rounded-lg border text-lg bg-white p-4'>
-        <h3>Tasks Completed:</h3>
-        {
-          // todaysGreenTickTasks.map
-          dashboardTodayTask.map((e)=>(
-            <div key={e} >
-              <h1>{e}</h1>
-            </div>
-          ))
+    {/* one div with 2 boxes */}
+      <div className='flex space-x-8'>
+        {para && 
+          (<div className='rounded-lg border text-lg bg-white p-4'>
+            <h2 className='font-semibold'>Tasks Completed:</h2>
+            {
+              // todaysGreenTickTasks.map
+              dashboardTodayTask.map((e, index)=>(
+                <div key={index} >
+                  <h1>{e}</h1>
+                </div>
+              ))
+            }
+
+            
+          </div>)
         }
-      </div>)
-    }
+
+        <div className='rounded-lg border text-lg bg-white p-4'>
+          <h1 className='font-semibold'>Streak:</h1>
+        </div>
+      </div>
+
+      <div className='rounded-lg border text-lg bg-white p-4'>
+        <h1>Completed Tasks:</h1>
+      </div>
     </div>
     
    </div>
