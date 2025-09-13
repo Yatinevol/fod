@@ -99,7 +99,8 @@ const Dashboard = () => {
               // todaysGreenTickTasks.map
               dashboardTodayTask.map((e, index)=>(
                 <div key={index} >
-                  <h1>{e}</h1>
+                  <h1>{e}:legts</h1>
+                  
                 </div>
               ))
             }
