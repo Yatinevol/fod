@@ -17,17 +17,17 @@ const DateTime = ({className}:{className:string}) => {
 
   const day = dateTime.toLocaleDateString("en-us",{
     weekday: "short",
-    day: "2-digit",
+    day: "numeric",
     month: "short"
   })
   const time = dateTime.toLocaleTimeString("en-us",{
-    hour: "2-digit",
-    minute: "2-digit"
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true
   })
   return (
     <div className={`flex items-center justify-end gap-2 text-black ${className}`}>
-     <span>{day}</span>
-     <span>{time}</span>
+     <span>{day}, {time}</span>
     </div>
   );
 }
