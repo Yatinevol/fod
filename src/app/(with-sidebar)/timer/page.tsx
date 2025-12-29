@@ -5,8 +5,8 @@ import React, { useEffect, useState } from "react";
 const Timer = () => {
     const [todayTrue, setTodayTrue] = useState(true)
     const [goalh, setGoalH] = useState(0);
-    console.log(goalh);
-    console.log(typeof goalh);
+    const [focusedMinutes, setFocusedMinutes] = useState(280);
+   
   return (
     <div>
         <div className='flex justify-between border-b-2 border-gray-300     pb-2 mb-4'>
@@ -71,6 +71,28 @@ const Timer = () => {
                     onClick={()=>setGoalH((prev)=> prev + 6)}>+6h</button>
                     <button className='px-4 py-2 cursor-pointer bg-gray-200 rounded-sm'
                     onClick={()=>setGoalH((prev)=> prev + 8)}>+8h</button>
+                </div>
+
+                <div className='mt-3'>
+                    <div className='flex justify-between'>
+                    <h4>Progress for Today's Goal</h4>
+                    <div>
+                        {Math.round(focusedMinutes/60 * 10) / 10} / {goalh} hours
+                    </div>
+                    </div>
+                    
+                    {/* Progress Bar */}
+                    <div className='mt-2 w-full bg-gray-200 rounded-full h-3'>
+                        <div 
+                            className='bg-purple-500 h-3 rounded-full transition-all duration-300 ease-out'
+                            style={{ 
+                                width: `${goalh > 0 ? Math.min((focusedMinutes / 60 / goalh) * 100, 100) : 0}%` 
+                            }}
+                        />
+                    </div>
+                </div>
+                <div>
+                    <button>Set</button>
                 </div>
             </div>
 
