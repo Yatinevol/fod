@@ -4,8 +4,36 @@ import React, { useEffect, useState } from "react";
 
 const Timer = () => {
     const [todayTrue, setTodayTrue] = useState(true)
-    const [goalh, setGoalH] = useState(0);
+    const [goalTHr, setGoalTHr] = useState(0);
+    const [goalWeekHr, setGoalWeekHr] = useState(0);
+    const [lockedTodayGoal, setLockedTodayGoal] = useState(0);
+    const [lockedWeekGoal, setLockedWeekGoal] = useState(0);
+    const [isTodayGoalSet, setIsTodayGoalSet] = useState(false);
+    const [isWeekGoalSet, setIsWeekGoalSet] = useState(false);
     const [focusedMinutes, setFocusedMinutes] = useState(280);
+
+    const handleSetGoal = () => {
+        if (todayTrue && goalTHr > 0) {
+            setLockedTodayGoal(goalTHr);
+            setIsTodayGoalSet(true);
+        } else if (!todayTrue && goalWeekHr > 0) {
+            setLockedWeekGoal(goalWeekHr);
+            setIsWeekGoalSet(true);
+        }
+    };
+
+    const handleEditGoal = () => {
+        if (todayTrue) {
+            setIsTodayGoalSet(false);
+            setGoalTHr(lockedTodayGoal);
+        } else {
+            setIsWeekGoalSet(false);
+            setGoalWeekHr(lockedWeekGoal);
+        }
+    };
+
+    const currentGoalSet = todayTrue ? isTodayGoalSet : isWeekGoalSet;
+    const currentLockedGoal = todayTrue ? lockedTodayGoal : lockedWeekGoal;
    
   return (
     <div>
@@ -30,54 +58,55 @@ const Timer = () => {
                             }`}>Week</button>
                     </div>
                 </div>
-                <div className='flex space-x-4'>
-                    <h1>
-                        Set Goal:
-                    </h1>
-                    {/* <select name="hours" value={goalh} onChange={(e)=>setGoalH(Number((e.target.value)))} id="hours">
-                        <option value="">Select Hours</option>
-                        <option value="0">00</option>
-                        <option value="1">01</option>
-                        <option value="2">02</option>
-                        <option value="3">03</option>
-                        <option value="4">04</option>
-                        <option value="5">05</option>
-                        <option value="6">06</option>
-                        <option value="7">07</option>
-                        <option value="8">08</option>
-                        <option value="9">09</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                        <option value="13">13</option>
-                        <option value="14">14</option>
-                        <option value="15">15</option>
-                        <option value="16">16</option>
-                        <option value="17">17</option>
-                        <option value="18">18</option>
-                        <option value="19">19</option>
-                        <option value="20">20</option>
-                        <option value="21">21</option>
-                        <option value="22">22</option>
-                    </select> */}
-                    <input className='w-16' type="number" id='hours' value={goalh} onChange={(e)=> setGoalH(Number(e.target.value))} min="0"/>
-                    <span>Hours</span>
-
-                </div>
-                <div className='flex mt-3 space-x-2'>
-                    <button className='px-4 py-2 cursor-pointer bg-gray-200 rounded-sm'
-                    onClick={()=>setGoalH((prev)=> prev + 4)}>+4h</button>
-                    <button className='px-4 py-2 cursor-pointer bg-gray-200 rounded-sm'
-                    onClick={()=>setGoalH((prev)=> prev + 6)}>+6h</button>
-                    <button className='px-4 py-2 cursor-pointer bg-gray-200 rounded-sm'
-                    onClick={()=>setGoalH((prev)=> prev + 8)}>+8h</button>
-                </div>
+                {!currentGoalSet ? (
+                    <>
+                        <div className='flex space-x-4'>
+                            <h1>
+                                Set Goal:
+                            </h1>
+                            <input 
+                                className='w-16' 
+                                type="number" 
+                                id='hours' 
+                                value={todayTrue ? goalTHr : goalWeekHr} 
+                                onChange={(e)=> todayTrue ? setGoalTHr(Number(e.target.value)) : setGoalWeekHr(Number(e.target.value))} 
+                                min="0"
+                            />
+                            <span>Hours</span>
+                        </div>
+                        <div className='flex mt-3 space-x-2'>
+                            <button className='px-4 py-2 cursor-pointer bg-gray-200 rounded-sm'
+                            onClick={()=> todayTrue ? setGoalTHr((prev)=> prev + 4) : setGoalWeekHr((prev)=> prev + 4)}>+4h</button>
+                            <button className='px-4 py-2 cursor-pointer bg-gray-200 rounded-sm'
+                            onClick={()=> todayTrue ? setGoalTHr((prev)=> prev + 6) : setGoalWeekHr((prev)=> prev + 6)}>+6h</button>
+                            <button className='px-4 py-2 cursor-pointer bg-gray-200 rounded-sm'
+                            onClick={()=> todayTrue ? setGoalTHr((prev)=> prev + 8) : setGoalWeekHr((prev)=> prev + 8)}>+8h</button>
+                        </div>
+                    </>
+                ) : (
+                    <div className='mt-4 p-3 bg-green-50 rounded-lg border border-green-200'>
+                        <div className='flex justify-between items-center'>
+                            <span className='text-green-700 font-medium'>
+                                Goal Set: {currentLockedGoal} hours ({todayTrue ? 'Today' : 'This Week'})
+                            </span>
+                            <button 
+                                onClick={handleEditGoal}
+                                className='p-1 text-gray-600 hover:text-gray-800 transition-colors'
+                                title="Edit goal"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 <div className='mt-3'>
                     <div className='flex justify-between'>
-                    <h4>Progress for Today's Goal</h4>
+                    <h4>Progress for {todayTrue ? "Today's" : "This Week's"} Goal</h4>
                     <div>
-                        {Math.round(focusedMinutes/60 * 10) / 10} / {goalh} hours
+                        {Math.round(focusedMinutes/60 * 10) / 10} / {currentGoalSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)} hours
                     </div>
                     </div>
                     
@@ -86,14 +115,28 @@ const Timer = () => {
                         <div 
                             className='bg-purple-500 h-3 rounded-full transition-all duration-300 ease-out'
                             style={{ 
-                                width: `${goalh > 0 ? Math.min((focusedMinutes / 60 / goalh) * 100, 100) : 0}%` 
+                                width: `${(currentGoalSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)) > 0 ? Math.min((focusedMinutes / 60 / (currentGoalSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr))) * 100, 100) : 0}%` 
                             }}
                         />
                     </div>
                 </div>
-                <div>
-                    <button>Set</button>
-                </div>
+
+                {/* Centered Set button - only show when goal is not set */}
+                {!currentGoalSet && (
+                    <div className='mt-3 flex justify-center'>
+                        <button 
+                            onClick={handleSetGoal}
+                            disabled={(todayTrue ? goalTHr : goalWeekHr) === 0}
+                            className={`px-6 py-2 rounded-md text-sm font-medium transition ${
+                                (todayTrue ? goalTHr : goalWeekHr) > 0 
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            }`}
+                        >
+                            Set Goal
+                        </button>
+                    </div>
+                )}
             </div>
 
              {/* //timer div: */}
