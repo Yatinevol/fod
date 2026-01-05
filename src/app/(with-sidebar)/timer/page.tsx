@@ -1,6 +1,6 @@
 "use client";
 import DateTime from '@/components/DateTime';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const Timer = () => {
     const [todayTrue, setTodayTrue] = useState(true)
@@ -15,55 +15,106 @@ const Timer = () => {
     const [isEditingTimer, setIsEditingTimer] = useState(false)
     // Add timer settings states
     const [workHr, setWorkHr] = useState(0);
-    const [workMin, setWorkMin] = useState(1);
+    const [workMin, setWorkMin] = useState(25);
     const [workSec, setWorkSec] = useState(0);  
     const [breakTime, setBreakTime] = useState(5);
-    const [longBreak, setLongBreak] = useState(15);
-    
+    const [savedHr, setSavedHr] = useState(0)
+    const [savedMin, setSavedMin] = useState(25)
+    const [savedSec, setSavedSec] = useState(0)
+// Use useRef instead of useState for timer
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+
     const handleEditTimer = ()=>{
         setIsEditingTimer((prev)=> !prev)
-         const date = new Date()
-            console.log(date);
     }
-    const [timer, setTimer] = useState<NodeJS.Timeout | null>(null)
-    const handlePlayTimer = ()=>{
-
-       if(isPlaying){
-            // stop the timer:
-            if(timer){
-                clearInterval(timer)
-                setTimer(null)
+    const handleSaveTimerSettings = ()=>{
+            setSavedHr(workHr)
+            setSavedMin(workMin)
+            setSavedSec(workSec)
+            console.log(`${savedHr}hr ${savedMin}min ${savedSec}sec`);
+            setIsEditingTimer(false)
+            console.log(`${workHr}hr ${workMin}min ${workSec}sec`); 
+    }
+    const handleResetTimer = ()=>{
+        // you have to stop the running timer.
+        
+            if(timerRef.current){
+                clearInterval(timerRef.current)
+                timerRef.current = null
             }
             setIsPlaying(false)
-       }else{
-            setIsPlaying(true)
-            let totalSecs = workHr * 3600 + workMin * 60 + workSec;
+            setWorkHr(savedHr);
+            setWorkMin(savedMin);
+            setWorkSec(savedSec);
         
-            const newTimer = setInterval(() => {
-                totalSecs--;
+    }
+    
+    // const totalSecsRef = useRef(0); // Add this at the top with your other refs
+
+    const handlePlayTimer = () => {
+        if (isPlaying) {
+            // Stop the timer
+            console.log("Stopping timer");
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+                timerRef.current = null;
+            }
+            setIsPlaying(false);
+        } else {
+            // Check if we have any time to count down
+            let totalSecs = workHr * 3600 + workMin * 60 + workSec;
+            // console.log("Total seconds:", totalSecs);
+            
+            // if (totalSecs <= 0) {
+            //     console.log("Please set a timer first - no time available");
+            //     return;
+            // }
+            
+            // Start the timer
+            // console.log("Starting timer");
+            setIsPlaying(true);
+            
+            // Initialize the ref with current time
+            // totalSecsRef.current = totalSecs;
+            
+            timerRef.current = setInterval(() => {
+                // console.log("Timer tick, remaining seconds:", totalSecsRef.current);
+                // totalSecsRef.current--;
+                totalSecs--
                 
                 if (totalSecs <= 0) {
-                    clearInterval(newTimer);
-                    setTimer(null);
+                    // console.log("Timer finished!");
+                    if (timerRef.current) {
+                        clearInterval(timerRef.current);
+                        timerRef.current = null;
+                    }
                     setIsPlaying(false);
-                    console.log("Time is up");
+                    setWorkHr(0);
+                    setWorkMin(0);
+                    setWorkSec(0);
                     return;
                 }
-            
-            const hours = Math.floor(totalSecs / 3600);
-            const min = Math.floor((totalSecs % 3600) / 60);
-            const sec = totalSecs % 60;
-            
-            setWorkHr(hours);
-            setWorkMin(min);
-            setWorkSec(sec);
-        }, 1000);
-        
-            setTimer(newTimer);
+                
+                const hours = Math.floor(totalSecs / 3600);
+                const min = Math.floor((totalSecs % 3600) / 60);
+                const sec = totalSecs % 60;
+                
+                setWorkHr(hours);
+                setWorkMin(min);
+                setWorkSec(sec);
+            }, 1000);
+        }
+    };
 
-       }
+    // Add cleanup useEffect
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+            }
+        };
+    }, []);
 
-    }
     // !isSet means : isTodayGoalSet/isWeekGoalSet === false
     const isSet = todayTrue ? isTodayGoalSet : isWeekGoalSet;
     const currentLockedGoal = todayTrue ? lockedTodayGoal : lockedWeekGoal;
@@ -90,9 +141,8 @@ const Timer = () => {
         }
        
     }
-    useEffect(()=>{
-        console.log("isPlaying updated to:", isPlaying);
-    },[isPlaying])
+    
+    
   return (
     <div>
         <div className='flex justify-between border-b-2 border-gray-300 pb-2 mb-4'>
@@ -227,13 +277,31 @@ const Timer = () => {
                                 <div className='flex items-center space-x-2'>
                                     <input 
                                         type="number" 
+                                        value={workHr} 
+                                        onChange={(e) => setWorkHr(Number(e.target.value))}
+                                        className='w-12 px-2 py-2 border border-gray-300 rounded-md text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                                        min="0"
+                                        max="23"
+                                    />
+                                    <span className='text-gray-600 text-sm'>h</span>
+                                    <input 
+                                        type="number" 
                                         value={workMin} 
                                         onChange={(e) => setWorkMin(Number(e.target.value))}
-                                        className='w-16 px-3 py-2 border border-gray-300 rounded-md text-center'
-                                        min="1"
-                                        max="60"
+                                        className='w-12 px-2 py-2 border border-gray-300 rounded-md text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                                        min="0"
+                                        max="59"
                                     />
-                                    <span className='text-gray-600'>min</span>
+                                    <span className='text-gray-600 text-sm'>m</span>
+                                    <input 
+                                        type="number" 
+                                        value={workSec} 
+                                        onChange={(e) => setWorkSec(Number(e.target.value))}
+                                        className='w-12 px-2 py-2 border border-gray-300 rounded-md text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+                                        min="0"
+                                        max="59"
+                                    />
+                                    <span className='text-gray-600 text-sm'>s</span>
                                 </div>
                             </div>
                             
@@ -244,7 +312,7 @@ const Timer = () => {
                                         type="number" 
                                         value={breakTime} 
                                         onChange={(e) => setBreakTime(Number(e.target.value))}
-                                        className='w-16 px-3 py-2 border border-gray-300 rounded-md text-center'
+                                        className='w-16 px-3 py-2 border border-gray-300 rounded-md text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
                                         min="1"
                                         max="30"
                                     />
@@ -252,25 +320,12 @@ const Timer = () => {
                                 </div>
                             </div>
                             
-                            <div className='flex justify-between items-center'>
-                                <label className='text-gray-700 font-medium'>Long Break</label>
-                                <div className='flex items-center space-x-2'>
-                                    <input 
-                                        type="number" 
-                                        value={longBreak} 
-                                        onChange={(e) => setLongBreak(Number(e.target.value))}
-                                        className='w-16 px-3 py-2 border border-gray-300 rounded-md text-center'
-                                        min="5"
-                                        max="60"
-                                    />
-                                    <span className='text-gray-600'>min</span>
-                                </div>
-                            </div>
+
                         </div>
                         
                         <div className='flex justify-center pt-6'>
                             <button 
-                                onClick={handleEditTimer}
+                                onClick={handleSaveTimerSettings}
                                 className='px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors'
                             >
                                 Save Settings
@@ -284,11 +339,11 @@ const Timer = () => {
                     <div className='relative w-48 h-48 rounded-full border-4 border-purple-200 flex items-center justify-center mb-4'>
                         <div className='text-center'>
                             <div className='text-4xl font-bold text-purple-600 mb-2'>
-                                <span>{workHr===0 && (0)}{workHr}</span>
+                                <span>{workHr.toString().padStart(2, '0')}</span>
                                 <span>:</span>
-                                <span>{workMin}</span>
+                                <span>{workMin.toString().padStart(2, '0')}</span>
                                 <span>:</span>
-                                <span>{workSec===0 && (0)}{workSec}</span>
+                                <span>{workSec.toString().padStart(2, '0')}</span>
                             </div>
                         </div>
                     </div>
@@ -310,7 +365,9 @@ const Timer = () => {
                                     </svg>
                                 )}
                             </button>
-                            <button className='w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center justify-center transition-colors'>
+                            <button className='w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center justify-center transition-colors'
+                            onClick={handleResetTimer}
+                            >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
