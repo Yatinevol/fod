@@ -1,5 +1,7 @@
 "use client";
 import DateTime from '@/components/DateTime';
+import Session from '@/components/Session';
+import { se } from 'date-fns/locale';
 import React, { useEffect, useRef, useState } from "react";
 
 const Timer = () => {
@@ -10,7 +12,8 @@ const Timer = () => {
     const [isWeekGoalSet, setIsWeekGoalSet] = useState(false);
     const [lockedTodayGoal, setLockedTodayGoal] = useState(0);
     const [lockedWeekGoal, setLockedWeekGoal] = useState(0);
-    const [focusedMinutes, setFocusedMinutes] = useState(280);
+    // it is keeping track of the progress of the target.
+    const [focusedMinutes, setFocusedMinutes] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isEditingTimer, setIsEditingTimer] = useState(false)
     // Add timer settings states
@@ -21,8 +24,45 @@ const Timer = () => {
     const [savedHr, setSavedHr] = useState(0)
     const [savedMin, setSavedMin] = useState(25)
     const [savedSec, setSavedSec] = useState(0)
-// Use useRef instead of useState for timer
+
+    // SESSION STATES - NEW
+    const [isSessionActive, setIsSessionActive] = useState(false);
+    const [sessionId, setSessionId] = useState<string>('');
+    const [sessionLink, setSessionLink] = useState<string>('');
+    const [participants, setParticipants] = useState([
+        { id: '1', username: 'Alice Smith', progress: 15, goal: 40, online: true },
+        { id: '2', username: 'Bob Johnson', progress: 8, goal: 40, online: true },
+        { id: '3', username: 'Charlie Brown', progress: 3, goal: 40, online: false },
+        { id: '4', username: 'Diana Prince', progress: 22, goal: 40, online: true }
+    ]); // Mock data for visualization
+    const [isSessionEnded, setIsSessionEnded] = useState(false);
+    const [sessionEndData, setSessionEndData] = useState(null);
+
+    // Use useRef instead of useState for timer
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // SESSION FUNCTIONS - NEW
+    const handleCreateSession = () => {
+        // Mock session creation for visual testing
+        setIsSessionActive(true);
+        setSessionId('ABC123XY');
+        setSessionLink(`https://yourapp.com/join/ABC123XY`);
+        console.log('Session created!');
+    };
+
+    const handleEndSession = () => {
+        setIsSessionActive(false);
+        setSessionId('');
+        setSessionLink('');
+        setParticipants([]);
+        console.log('Session ended!');
+    };
+
+    const copySessionLink = () => {
+        navigator.clipboard.writeText(sessionLink);
+        // You could add a toast notification here
+        console.log('Link copied!');
+    };
 
     const handleEditTimer = ()=>{
         setIsEditingTimer((prev)=> !prev)
@@ -31,13 +71,13 @@ const Timer = () => {
             setSavedHr(workHr)
             setSavedMin(workMin)
             setSavedSec(workSec)
-            console.log(`${savedHr}hr ${savedMin}min ${savedSec}sec`);
             setIsEditingTimer(false)
-            console.log(`${workHr}hr ${workMin}min ${workSec}sec`); 
     }
     const handleResetTimer = ()=>{
+        let updateProgress = initialTimeRef.current - totalSecsRef.current
+        updateProgress  = Math.floor(updateProgress/3600)
+        setFocusedMinutes((prev)=> prev + updateProgress)   
         // you have to stop the running timer.
-        
             if(timerRef.current){
                 clearInterval(timerRef.current)
                 timerRef.current = null
@@ -49,11 +89,10 @@ const Timer = () => {
         
     }
     
-    // const totalSecsRef = useRef(0); // Add this at the top with your other refs
-
+    const totalSecsRef = useRef(0); 
+    const initialTimeRef = useRef(0);
     const handlePlayTimer = () => {
         if (isPlaying) {
-            // Stop the timer
             console.log("Stopping timer");
             if (timerRef.current) {
                 clearInterval(timerRef.current);
@@ -61,29 +100,19 @@ const Timer = () => {
             }
             setIsPlaying(false);
         } else {
-            // Check if we have any time to count down
             let totalSecs = workHr * 3600 + workMin * 60 + workSec;
-            // console.log("Total seconds:", totalSecs);
-            
-            // if (totalSecs <= 0) {
-            //     console.log("Please set a timer first - no time available");
-            //     return;
-            // }
-            
-            // Start the timer
-            // console.log("Starting timer");
             setIsPlaying(true);
             
-            // Initialize the ref with current time
-            // totalSecsRef.current = totalSecs;
-            
+            totalSecsRef.current = totalSecs;
+            initialTimeRef.current = totalSecs;
             timerRef.current = setInterval(() => {
-                // console.log("Timer tick, remaining seconds:", totalSecsRef.current);
-                // totalSecsRef.current--;
-                totalSecs--
+                console.log("Timer tick, remaining seconds:", totalSecsRef.current);
+                totalSecsRef.current--
                 
-                if (totalSecs <= 0) {
-                    // console.log("Timer finished!");
+                if (totalSecsRef.current <= 0) {
+                    let updateProgress = initialTimeRef.current - totalSecsRef.current
+                    updateProgress  = Math.floor(updateProgress/3600)
+                    setFocusedMinutes((prev)=> prev + updateProgress)
                     if (timerRef.current) {
                         clearInterval(timerRef.current);
                         timerRef.current = null;
@@ -95,9 +124,9 @@ const Timer = () => {
                     return;
                 }
                 
-                const hours = Math.floor(totalSecs / 3600);
-                const min = Math.floor((totalSecs % 3600) / 60);
-                const sec = totalSecs % 60;
+                const hours = Math.floor(totalSecsRef.current / 3600);
+                const min = Math.floor((totalSecsRef.current % 3600) / 60);
+                const sec = totalSecsRef.current % 60;
                 
                 setWorkHr(hours);
                 setWorkMin(min);
@@ -106,7 +135,6 @@ const Timer = () => {
         }
     };
 
-    // Add cleanup useEffect
     useEffect(() => {
         return () => {
             if (timerRef.current) {
@@ -114,8 +142,24 @@ const Timer = () => {
             }
         };
     }, []);
-
-    // !isSet means : isTodayGoalSet/isWeekGoalSet === false
+    
+    const handleSkipTimer = ()=>{
+        let updateProgress = initialTimeRef.current - totalSecsRef.current
+        updateProgress  = Math.floor(updateProgress/3600)
+        setFocusedMinutes((prev)=> prev + updateProgress) 
+        if(timerRef.current){
+            clearInterval(timerRef.current)
+            timerRef.current = null
+        }
+        setIsPlaying(false)
+        let hour = Math.floor(breakTime / 60);
+        let min = breakTime % 60;
+        let sec = 0;
+        setWorkHr(hour)
+        setWorkMin(min)
+        setWorkSec(sec)
+    }
+    
     const isSet = todayTrue ? isTodayGoalSet : isWeekGoalSet;
     const currentLockedGoal = todayTrue ? lockedTodayGoal : lockedWeekGoal;
     const handleSetGoal = ()=>{
@@ -139,12 +183,11 @@ const Timer = () => {
             setGoalWeekHr(lockedWeekGoal)
             }
         }
-       
     }
     
     
   return (
-    <div>
+    <div className="space-y-8">
         <div className='flex justify-between border-b-2 border-gray-300 pb-2 mb-4'>
             <h1>Timer</h1>
             <DateTime  className="font-bold hidden md:block"/>
@@ -245,6 +288,54 @@ const Timer = () => {
                         </button>
                     </div>
                 )}
+
+                {/* SESSION CONTROLS - NEW */}
+                {/* Share as Session button - only show for weekly goals that are set */}
+                {isSet && !todayTrue && !isSessionActive && (
+                    <div className='flex justify-center mt-4'>
+                        <button 
+                            onClick={handleCreateSession}
+                            className='px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors'
+                        >
+                            Share Weekly Goal as Session
+                        </button>
+                    </div>
+                )}
+
+                {/* Session active status - show when session is running */}
+                {isSessionActive && (
+                    <div className='mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200'>
+                        <div className='flex justify-between items-center mb-2'>
+                            <div className='flex items-center space-x-2'>
+                                <div className='w-2 h-2 bg-green-500 rounded-full'></div>
+                                <span className='text-blue-700 font-medium'>Session Active</span>
+                            </div>
+                            <div className='flex items-center space-x-2'>
+                                <span className='text-sm text-gray-600'>{participants.length} participants</span>
+                                <button 
+                                    onClick={handleEndSession}
+                                    className='text-red-600 hover:text-red-800 text-sm font-medium'
+                                >
+                                    End Session
+                                </button>
+                            </div>
+                        </div>
+                        <div className='flex items-center space-x-2'>
+                            <input 
+                                type="text" 
+                                value={sessionLink} 
+                                readOnly 
+                                className='flex-1 px-2 py-1 text-xs bg-white border border-blue-300 rounded'
+                            />
+                            <button 
+                                onClick={copySessionLink}
+                                className='px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors'
+                            >
+                                Copy Link
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
              {/* timer div: */}
@@ -319,8 +410,6 @@ const Timer = () => {
                                     <span className='text-gray-600'>min</span>
                                 </div>
                             </div>
-                            
-
                         </div>
                         
                         <div className='flex justify-center pt-6'>
@@ -372,7 +461,7 @@ const Timer = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
                             </button>
-                            <button className='w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center justify-center transition-colors'>
+                            <button className='w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center justify-center transition-colors' onClick={handleSkipTimer}>
                                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
                                 </svg>
@@ -381,6 +470,9 @@ const Timer = () => {
                 </div>
             </div>
         </div>
+
+        {/* Session Component - Pass participants data */}
+        <Session participants={participants} isActive={isSessionActive} />
     </div>
   )
 }
