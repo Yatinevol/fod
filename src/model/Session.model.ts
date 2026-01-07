@@ -1,8 +1,8 @@
 import mongoose, { Schema, Types } from 'mongoose';
 
 export interface Participant {
-    userId: Types.ObjectId | string;
-    username: string;
+    userId: undefined | string;
+    username: string | undefined;
     totalFocusMinutes: number;
     targetMinutes: number;
 }
