@@ -3,6 +3,7 @@ import { dbConnect } from "@/lib/dbConnect";
 import { Session } from "@/model/Session.model";
 import { User } from "next-auth";
 import { NextRequest } from "next/server";
+import { success } from "zod";
 
 
 export async function POST(request: NextRequest, { params }: { params: { sessionId: string } }) {
@@ -17,7 +18,7 @@ export async function POST(request: NextRequest, { params }: { params: { session
         await dbConnect()
         const user:User = session.user
         const {sessionId} = params
-
+        console.log("session Id value check in server side",sessionId);
         const sessionExist = await Session.findOne({
             sessionId,
             isActive: true
@@ -35,6 +36,12 @@ export async function POST(request: NextRequest, { params }: { params: { session
                 { status: 400 });
         }
         const userId = session.user._id
+        if(!userId){
+            return Response.json({
+                message:"User not found",
+                success: false
+            },{status:400})
+        }
         const existingParticipant = sessionExist.participants.find(
             p => p.userId === userId
         )
@@ -44,7 +51,7 @@ export async function POST(request: NextRequest, { params }: { params: { session
                 userId,
                 username: user.username,
                 totalFocusMinutes:0,
-                targetMinutes : sessionExist.weeklyGoalHours * 60
+                targetHour : sessionExist.weeklyGoalHours
             });
             await sessionExist.save();
         }

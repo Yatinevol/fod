@@ -53,7 +53,7 @@ export async function POST(request:NextRequest,{params}:{params:{sessionId: stri
         }
 
         const isParticipant = sessionFound.participants.some(
-            p => p.userId === user._id
+            p => p.userId?.toString() === user._id
         );
 
         if(!isParticipant){

@@ -15,7 +15,7 @@ export async function GET(request:NextRequest,{params}:{params:{sessionId: strin
 
         await dbConnect()
     
-        const {sessionId} = params
+        const {sessionId} = await params
         const user:User = session.user
         const sessionFound = await Session.findOne({
             sessionId
@@ -34,8 +34,9 @@ export async function GET(request:NextRequest,{params}:{params:{sessionId: strin
                 message: "Session expired",
                 },{status: 410})
         }
+        // console.log("sessionFound on server side :",sessionFound)
         const isParticipant = sessionFound.participants.some(
-            p=> p.userId === user._id
+            p=> p.userId?.toString() === user._id
         )
         if(!isParticipant){
              return Response.json(

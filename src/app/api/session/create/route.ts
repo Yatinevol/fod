@@ -39,7 +39,7 @@ export async function POST(request:NextRequest) {
                 userId : session.user._id,
                 username: session.user.username,
                 totalFocusMinutes : 0,
-                targetMinutes : goalWeekHr * 60
+                targetHour : goalWeekHr
 
             }],
             weeklyGoalHours: goalWeekHr,

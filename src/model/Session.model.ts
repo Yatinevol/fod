@@ -1,10 +1,10 @@
 import mongoose, { Schema, Types } from 'mongoose';
 
 export interface Participant {
-    userId: undefined | string;
+    userId: Types.ObjectId | string;
     username: string | undefined;
     totalFocusMinutes: number;
-    targetMinutes: number;
+    targetHour: number;
 }
 
 export interface Session {
@@ -27,7 +27,7 @@ const ParticipantSchema = new Schema<Participant>({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     username: { type: String, required: true },
     totalFocusMinutes: { type: Number, default: 0 },
-    targetMinutes: { type: Number, required: true }
+    targetHour: { type: Number, required: true }
 });
 
 const SessionSchema = new Schema<SessionDocument>({

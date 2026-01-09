@@ -1,8 +1,9 @@
 "use client";
 import DateTime from '@/components/DateTime';
 import Session from '@/components/Session';
-import { se } from 'date-fns/locale';
+import axios from 'axios';
 import React, { useEffect, useRef, useState } from "react";
+import { toast } from 'sonner';
 
 const Timer = () => {
     const [todayTrue, setTodayTrue] = useState(true)
@@ -13,7 +14,7 @@ const Timer = () => {
     const [lockedTodayGoal, setLockedTodayGoal] = useState(0);
     const [lockedWeekGoal, setLockedWeekGoal] = useState(0);
     // it is keeping track of the progress of the target.
-    const [focusedMinutes, setFocusedMinutes] = useState(0);
+    const [focusedMinutes, setFocusedMinutes] = useState(2);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isEditingTimer, setIsEditingTimer] = useState(false)
     // Add timer settings states
@@ -25,43 +26,79 @@ const Timer = () => {
     const [savedMin, setSavedMin] = useState(25)
     const [savedSec, setSavedSec] = useState(0)
 
-    // SESSION STATES - NEW
+    // SESSION STATES - NEW 
+    const [isCreating, setIsCreating] = useState(false)
     const [isSessionActive, setIsSessionActive] = useState(false);
     const [sessionId, setSessionId] = useState<string>('');
     const [sessionLink, setSessionLink] = useState<string>('');
-    const [participants, setParticipants] = useState([
-        { id: '1', username: 'Alice Smith', progress: 15, goal: 40, online: true },
-        { id: '2', username: 'Bob Johnson', progress: 8, goal: 40, online: true },
-        { id: '3', username: 'Charlie Brown', progress: 3, goal: 40, online: false },
-        { id: '4', username: 'Diana Prince', progress: 22, goal: 40, online: true }
-    ]); // Mock data for visualization
+    const [participants, setParticipants] = useState([]);
+
     const [isSessionEnded, setIsSessionEnded] = useState(false);
     const [sessionEndData, setSessionEndData] = useState(null);
-
     // Use useRef instead of useState for timer
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     // SESSION FUNCTIONS - NEW
-    const handleCreateSession = () => {
-        // Mock session creation for visual testing
-        setIsSessionActive(true);
-        setSessionId('ABC123XY');
-        setSessionLink(`https://yourapp.com/join/ABC123XY`);
-        console.log('Session created!');
-    };
+    const handleCreateSession = async()=>{
+        setIsCreating(true)
+        try {
+            setIsSessionActive(true)
+    
+            const response = await axios.post("/api/session/create",{
+                goalWeekHr
+            })
+            const {sessionLink, sessionId} = response.data
+            setSessionId(sessionId)
+            setSessionLink(sessionLink) 
+            // console.log("session info:", response.data.session);
+            
+        } catch (error) {
+            console.error("Failed to create session:", error); // Just add this
+    
+            setIsSessionActive(false);
+            const errorMessage = axios.isAxiosError(error) && error.response?.data?.message
+                ? error.response.data.message
+                : "Failed to create session. Please try again.";
+            toast.error(errorMessage);
+        }finally{
+            setIsCreating(false)
+            // setIsSessionActive(false)
+        }
+    }
+    const handleCopyLink= ()=>{
+             navigator.clipboard.writeText(sessionLink)
+            console.log("link copied");
+            toast("link copied")
+            }
+    
+    const handleGetSessionParticipants = async()=>{
+        if(sessionId){
+            const response = await axios.get(`/api/session/${sessionId}`)
+            const {participants} = response.data
+            // console.log("participants of session",participants);
+            setParticipants(participants)
+        }
+    }
+    const [isJoinSession, setIsJoinSession] = useState(false)
+    const handleSessionJoin = async()=>{
+        
+        setIsJoinSession(true)
+        try {
+            const response = await axios.post(`/api/session/join/${sessionId}`)
+            console.log("response from session join",response);
+            
+        } catch (error) {
+            
+        }finally{
 
+        }
+    }
     const handleEndSession = () => {
         setIsSessionActive(false);
         setSessionId('');
         setSessionLink('');
         setParticipants([]);
         console.log('Session ended!');
-    };
-
-    const copySessionLink = () => {
-        navigator.clipboard.writeText(sessionLink);
-        // You could add a toast notification here
-        console.log('Link copied!');
     };
 
     const handleEditTimer = ()=>{
@@ -257,7 +294,8 @@ const Timer = () => {
                     <div className='flex justify-between items-center mb-3'>
                         <h4 className='text-gray-700 font-medium'>Progress for {todayTrue ? "Today's" : "This Week's"} Goal</h4>
                         <div className='text-sm font-semibold text-gray-600'>
-                            {Math.round(focusedMinutes/60 * 10) / 10} / {isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)} hours
+                            {/* {Math.round(focusedMinutes/60 * 10) / 10} */}
+                            {focusedMinutes}/ {isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)} hours
                         </div>
                     </div>
                     
@@ -266,7 +304,7 @@ const Timer = () => {
                         <div 
                             className='bg-purple-500 h-2 rounded-full transition-all duration-300 ease-out'
                             style={{ 
-                                width: `${(isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)) > 0 ? Math.min((focusedMinutes / 60 / (isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr))) * 100, 100) : 0}%` 
+                                width: `${(isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)) > 0 ? Math.min((focusedMinutes / (isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr))) * 100, 100) : 0}%` 
                             }}
                         />
                     </div>
@@ -286,6 +324,10 @@ const Timer = () => {
                         >
                             Set Goal
                         </button>
+                        <button onClick={handleCreateSession}>clickMe</button>
+                        <button className='mx-2' onClick={handleGetSessionParticipants}>show</button>
+                        <button className='mx-2' onClick={handleSessionJoin}>Join</button>
+                       
                     </div>
                 )}
 
@@ -328,7 +370,7 @@ const Timer = () => {
                                 className='flex-1 px-2 py-1 text-xs bg-white border border-blue-300 rounded'
                             />
                             <button 
-                                onClick={copySessionLink}
+                                onClick={handleCopyLink}
                                 className='px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors'
                             >
                                 Copy Link
