@@ -2,6 +2,7 @@
 import DateTime from '@/components/DateTime';
 import Session from '@/components/Session';
 import axios from 'axios';
+import { useSession } from 'next-auth/react';
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from 'sonner';
 
@@ -37,6 +38,38 @@ const Timer = () => {
     const [sessionEndData, setSessionEndData] = useState(null);
     // Use useRef instead of useState for timer
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // New states for joining session
+    const [joinSessionLink, setJoinSessionLink] = useState('');
+    // using client side auth to session info:
+    const {data: session} = useSession()
+
+    useEffect(()=>{
+        const fetchActiveSession=async()=>{
+            if(!session?.user)return;
+
+            try {
+                const response = await axios.get('/api/user/active-session')
+                console.log("respones from fetchActiveSession",response);
+                if(response.data.hasActiveSession){
+                     setIsSessionActive(true);
+                    setSessionId(response.data.sessionData.sessionId);
+                    setSessionLink(response.data.sessionData.sessionLink);
+                    setGoalWeekHr(response.data.sessionData.weeklyGoalHours);
+                    setForHost(response.data.sessionData.isHost);
+                    setIsWeekGoalSet(true);
+                    setLockedWeekGoal(response.data.sessionData.weeklyGoalHours);
+                    setParticipants(response.data.sessionData.participants);
+                    setTodayTrue(false);
+                }
+            } catch (error) {
+                console.error('Failed to fetch session state:', error);
+
+            }
+        }
+        fetchActiveSession()
+
+    },[session?.user])
 
     // SESSION FUNCTIONS - NEW
     const handleCreateSession = async()=>{
@@ -80,25 +113,44 @@ const Timer = () => {
         }
     }
     const [isJoinSession, setIsJoinSession] = useState(false)
+    const [forHost, setForHost] = useState(true)
     const handleSessionJoin = async()=>{
-        
+        const extractedSessionId = joinSessionLink.split('/').pop() || ''
         setIsJoinSession(true)
-        try {
-            const response = await axios.post(`/api/session/join/${sessionId}`)
-            console.log("response from session join",response);
+        try{
+            const response = await axios.post(`/api/session/join/${extractedSessionId}`)
+            // console.log("response of join session from server side",response.data);
+
+            if(response.data.success){
+                setIsSessionActive(true)
+                setSessionId(extractedSessionId)
+                setJoinSessionLink('')
+                const sessionData = session?.user._id
+                const isHost = response.data.host === sessionData
+                setForHost(isHost)
+                toast.success("Successfully joined session!");
+            }
             
         } catch (error) {
-            
-        }finally{
-
+            console.error("Failed to join session:", error);
+            setIsSessionActive(false);
+            const errorMessage = axios.isAxiosError(error) && error.response?.data?.message
+                ? error.response.data.message
+                : "Failed to join session. Please try again.";
+            toast.error(errorMessage);
+        } finally {
+            setIsJoinSession(false);
         }
+    }
+    const handleLeaveSession = ()=>{
+
     }
     const handleEndSession = () => {
         setIsSessionActive(false);
         setSessionId('');
         setSessionLink('');
         setParticipants([]);
-        console.log('Session ended!');
+        // console.log('Session ended!');
     };
 
     const handleEditTimer = ()=>{
@@ -222,7 +274,11 @@ const Timer = () => {
         }
     }
     
-    
+    useEffect(()=>{
+        if(isSessionActive){
+            handleGetSessionParticipants()
+        }
+    },[sessionId])
   return (
     <div className="space-y-8">
         <div className='flex justify-between border-b-2 border-gray-300 pb-2 mb-4'>
@@ -312,7 +368,7 @@ const Timer = () => {
 
                 {/* Centered Set button - only show when goal is not set */}
                 {!isSet && (
-                    <div className='flex justify-center'>
+                    <div className='flex flex-col items-center space-y-4'>
                         <button 
                             onClick={(handleSetGoal)}
                             disabled={(todayTrue ? goalTHr : goalWeekHr) === 0}
@@ -324,10 +380,42 @@ const Timer = () => {
                         >
                             Set Goal
                         </button>
-                        <button onClick={handleCreateSession}>clickMe</button>
-                        <button className='mx-2' onClick={handleGetSessionParticipants}>show</button>
-                        <button className='mx-2' onClick={handleSessionJoin}>Join</button>
-                       
+
+                        {/* Join Session Section */}
+                        {!isSessionActive && (
+                            <div className='w-full'>
+                                <div className='flex items-center mb-3'>
+                                    <div className='flex-1 h-px bg-gray-300'></div>
+                                    <span className='px-3 text-sm text-gray-500'>or</span>
+                                    <div className='flex-1 h-px bg-gray-300'></div>
+                                </div>
+                                
+                                <div className='space-y-3'>
+                                    <h3 className='text-sm font-medium text-gray-700 text-center'>Join an Existing Session</h3>
+                                    <div className='flex space-x-2'>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter Session ID"
+                                            value={joinSessionLink}
+                                            onChange={(e) => setJoinSessionLink(e.target.value)}
+                                            className='flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent'
+                                            disabled={isJoinSession}
+                                        />
+                                        <button
+                                            onClick={handleSessionJoin}
+                                            disabled={!joinSessionLink.trimEnd()|| isJoinSession}
+                                            className={`px-4 py-2 rounded-md text-sm font-medium transition ${
+                                                isJoinSession || !joinSessionLink.trim()
+                                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                                    : 'bg-green-600 text-white hover:bg-green-700'
+                                            }`}
+                                        >
+                                            {isJoinSession ? 'Joining...' : 'Join'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -337,9 +425,14 @@ const Timer = () => {
                     <div className='flex justify-center mt-4'>
                         <button 
                             onClick={handleCreateSession}
-                            className='px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors'
+                            disabled={isCreating}
+                            className={`px-4 py-2 rounded-md transition-colors ${
+                                isCreating
+                                    ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                                    : 'bg-green-600 text-white hover:bg-green-700'
+                            }`}
                         >
-                            Share Weekly Goal as Session
+                            {isCreating ? 'Creating...' : 'Share Weekly Goal as Session'}
                         </button>
                     </div>
                 )}
@@ -350,32 +443,55 @@ const Timer = () => {
                         <div className='flex justify-between items-center mb-2'>
                             <div className='flex items-center space-x-2'>
                                 <div className='w-2 h-2 bg-green-500 rounded-full'></div>
-                                <span className='text-blue-700 font-medium'>Session Active</span>
+                                <span className='text-blue-700 font-medium'>
+                                    {forHost ? 'Hosting Session' : 'Joined Session'}
+                                </span>
                             </div>
                             <div className='flex items-center space-x-2'>
                                 <span className='text-sm text-gray-600'>{participants.length} participants</span>
-                                <button 
-                                    onClick={handleEndSession}
-                                    className='text-red-600 hover:text-red-800 text-sm font-medium'
-                                >
-                                    End Session
-                                </button>
+                                {/* Only show End Session for host */}
+                                {forHost && (
+                                    <button 
+                                        onClick={handleEndSession}
+                                        className='text-red-600 hover:text-red-800 text-sm font-medium'
+                                    >
+                                        End Session
+                                    </button>
+                                )}
+                                {/* Show Leave Session for participants */}
+                                {!forHost && (
+                                    <button 
+                                        onClick={handleLeaveSession}
+                                        className='text-orange-600 hover:text-orange-800 text-sm font-medium'
+                                    >
+                                        Leave Session
+                                    </button>
+                                )}
                             </div>
                         </div>
-                        <div className='flex items-center space-x-2'>
-                            <input 
-                                type="text" 
-                                value={sessionLink} 
-                                readOnly 
-                                className='flex-1 px-2 py-1 text-xs bg-white border border-blue-300 rounded'
-                            />
-                            <button 
-                                onClick={handleCopyLink}
-                                className='px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors'
-                            >
-                                Copy Link
-                            </button>
-                        </div>
+                        {/* Only show session link for host */}
+                        {forHost && sessionLink && (
+                            <div className='flex items-center space-x-2'>
+                                <input 
+                                    type="text" 
+                                    value={sessionLink} 
+                                    readOnly 
+                                    className='flex-1 px-2 py-1 text-xs bg-white border border-blue-300 rounded'
+                                />
+                                <button 
+                                    onClick={handleCopyLink}
+                                    className='px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors'
+                                >
+                                    Copy Link
+                                </button>
+                            </div>
+                        )}
+                        {/* For participants, show simpler info */}
+                        {!forHost && (
+                            <div className='text-xs text-gray-600 text-center'>
+                                You're participating in this weekly goal session
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

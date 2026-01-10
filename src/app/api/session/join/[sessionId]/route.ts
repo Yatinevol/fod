@@ -17,7 +17,7 @@ export async function POST(request: NextRequest, { params }: { params: { session
         
         await dbConnect()
         const user:User = session.user
-        const {sessionId} = params
+        const {sessionId} = await params
         console.log("session Id value check in server side",sessionId);
         const sessionExist = await Session.findOne({
             sessionId,
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest, { params }: { params: { session
             },{status:400})
         }
         const existingParticipant = sessionExist.participants.find(
-            p => p.userId === userId
+            p => p.userId.toString() === userId
         )
 
         if(!existingParticipant){
@@ -59,6 +59,7 @@ export async function POST(request: NextRequest, { params }: { params: { session
          return Response.json({
             success: true,
             session: sessionExist,
+            host: sessionExist.createdBy.toString(),
             message: existingParticipant ? "Already in session" : "Joined successfully"
         });
 
