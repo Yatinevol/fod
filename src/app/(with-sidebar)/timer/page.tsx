@@ -15,7 +15,7 @@ const Timer = () => {
     const [lockedTodayGoal, setLockedTodayGoal] = useState(0);
     const [lockedWeekGoal, setLockedWeekGoal] = useState(0);
     // it is keeping track of the progress of the target.
-    const [focusedMinutes, setFocusedMinutes] = useState(2);
+    const [focusedMinutes, setFocusedMinutes] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isEditingTimer, setIsEditingTimer] = useState(false)
     // Add timer settings states
@@ -96,6 +96,17 @@ const Timer = () => {
         }finally{
             setIsCreating(false)
             // setIsSessionActive(false)
+        }
+    }
+    const handleUpdateProgress = async(focusedMinutes:number)=>{
+        try {
+            const response = await axios.post(`/api/session/update-progress/${sessionId}`,{focusedMinutes})
+            console.log("handle update progress console",response);
+            if(response.data.success){
+                setParticipants(response.data.session.participants)
+            }
+        } catch (error) {
+        console.error('Failed to update progress:', error);
         }
     }
     const handleCopyLink= ()=>{
@@ -194,14 +205,21 @@ const Timer = () => {
             
             totalSecsRef.current = totalSecs;
             initialTimeRef.current = totalSecs;
-            timerRef.current = setInterval(() => {
+            timerRef.current = setInterval(async() => {
                 console.log("Timer tick, remaining seconds:", totalSecsRef.current);
                 totalSecsRef.current--
                 
                 if (totalSecsRef.current <= 0) {
                     let updateProgress = initialTimeRef.current - totalSecsRef.current
-                    updateProgress  = Math.floor(updateProgress/3600)
-                    setFocusedMinutes((prev)=> prev + updateProgress)
+                    console.log("updateProgress",updateProgress);
+                    let updateProgressInMins  = Math.floor(updateProgress/60)
+                    console.log("updateProgressInHours",updateProgressInMins);
+                    let newFocusM = updateProgressInMins + focusedMinutes
+                    setFocusedMinutes((prev)=> prev + updateProgressInMins)
+                    if(isSessionActive && sessionId){
+                        console.log("newFocusMinutes:",newFocusM);
+                        handleUpdateProgress(newFocusM)
+                    }
                     if (timerRef.current) {
                         clearInterval(timerRef.current);
                         timerRef.current = null;
@@ -351,7 +369,7 @@ const Timer = () => {
                         <h4 className='text-gray-700 font-medium'>Progress for {todayTrue ? "Today's" : "This Week's"} Goal</h4>
                         <div className='text-sm font-semibold text-gray-600'>
                             {/* {Math.round(focusedMinutes/60 * 10) / 10} */}
-                            {focusedMinutes}/ {isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)} hours
+                            {Math.floor(focusedMinutes/60)}h{focusedMinutes % 60}m/ {isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)} hours
                         </div>
                     </div>
                     
@@ -360,7 +378,7 @@ const Timer = () => {
                         <div 
                             className='bg-purple-500 h-2 rounded-full transition-all duration-300 ease-out'
                             style={{ 
-                                width: `${(isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)) > 0 ? Math.min((focusedMinutes / (isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr))) * 100, 100) : 0}%` 
+                                width: `${(isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)) > 0 ? Math.min((focusedMinutes/60 / (isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr))) * 100, 100) : 0}%` 
                             }}
                         />
                     </div>

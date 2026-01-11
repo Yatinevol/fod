@@ -20,9 +20,9 @@ export async function POST(request:NextRequest,{params}:{params:{sessionId: stri
         await dbConnect()
 
         const user:User = session.user
-        const {sessionId} = params;
+        const {sessionId} = await params;
         const {focusedMinutes} = await request.json()
-        if(typeof focusedMinutes || focusedMinutes < 1){
+        if(focusedMinutes < 0){
             return Response.json({
                 success:false,
                 message:"Focused time should not be zero"

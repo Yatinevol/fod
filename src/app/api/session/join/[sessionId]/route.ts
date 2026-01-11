@@ -3,7 +3,6 @@ import { dbConnect } from "@/lib/dbConnect";
 import { Session } from "@/model/Session.model";
 import { User } from "next-auth";
 import { NextRequest } from "next/server";
-import { success } from "zod";
 
 
 export async function POST(request: NextRequest, { params }: { params: { sessionId: string } }) {
