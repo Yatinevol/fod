@@ -17,7 +17,7 @@ export async function POST(request:NextRequest,{params}:{params:{sessionId:strin
 
         await dbConnect();
         const user:User = session.user
-        const sessionId = params
+        const {sessionId} =await params
         const sessionFound = await Session.findOne({
             sessionId,
             isActive:true
@@ -32,7 +32,7 @@ export async function POST(request:NextRequest,{params}:{params:{sessionId:strin
 
         }
 
-        if(sessionFound.createdBy !== user._id){
+        if(sessionFound.createdBy.toString() !== user._id){
             return Response.json(
                 { message: "Only session host can end the session",
                   success: false
@@ -48,6 +48,7 @@ export async function POST(request:NextRequest,{params}:{params:{sessionId:strin
 
         return Response.json({
             success: true,
+            isSessionActive: sessionFound.isActive,
             message: "Session ended successfully",
             finalSession: sessionFound
         });

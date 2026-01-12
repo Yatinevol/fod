@@ -23,7 +23,7 @@ export async function GET(request:NextRequest,{params}:{params:{sessionId: strin
     
         if(!sessionFound || !sessionFound.isActive){
              return Response.json(
-                { error: "Session not found" },
+                { message: "Session not found" },
                 { status: 404 });
         }
     
@@ -40,7 +40,7 @@ export async function GET(request:NextRequest,{params}:{params:{sessionId: strin
         )
         if(!isParticipant){
              return Response.json(
-            { error: "Access denied. You are not a participant of this session." },
+            { message: "Access denied. You are not a participant of this session." },
             { status: 403 }
     );
         }

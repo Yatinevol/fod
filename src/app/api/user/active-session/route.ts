@@ -32,13 +32,16 @@ export async function GET(request:NextRequest) {
         }
 
         const isHost = sessionInfoFound.createdBy.toString() === user._id
-
+        const userParticipantData = sessionInfoFound.participants.find(
+            p => p.userId.toString() === user._id
+        )
         return Response.json({
             success:true,
             hasActiveSession:true,
             sessionData:{
                 sessionId: sessionInfoFound.sessionId,
-                sessionLink: `${process.env.NEXT_PUBLIC_BASE_URL}` || `http://localhost:3000'/join/${sessionInfoFound.sessionId}`,
+                totalFocusMinutes:userParticipantData?.totalFocusMinutes,      
+                sessionLink: `${process.env.NEXTAUTH_URL}/join/${sessionInfoFound.sessionId}`,
                 isHost,
                 participants: sessionInfoFound.participants,
                 weeklyGoalHours: sessionInfoFound.weeklyGoalHours

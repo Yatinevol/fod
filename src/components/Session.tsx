@@ -47,13 +47,13 @@ const Session: React.FC<SessionProps> = ({ participants, isActive }) => {
                   {participant.totalFocusMinutes} / {participant.targetHour} hours
                 </div>
                 <div className='text-xs text-gray-500'>
-                  {Math.round((participant.totalFocusMinutes / participant.targetHour) * 100)}% complete
+                  {Math.round((participant.totalFocusMinutes/60 / participant.targetHour) * 100)}% complete
                 </div>
               </div>
               <div className='w-24 h-2 bg-gray-200 rounded-full'>
                 <div 
                   className='h-2 bg-purple-500 rounded-full transition-all duration-300'
-                  style={{ width: `${Math.min((participant.totalFocusMinutes / participant.targetHour) * 100, 100)}%` }}
+                  style={{ width: `${Math.min((participant.totalFocusMinutes/60 / participant.targetHour) * 100, 100)}%` }}
                 ></div>
               </div>
             </div>
