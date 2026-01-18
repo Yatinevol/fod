@@ -44,7 +44,7 @@ const Session: React.FC<SessionProps> = ({ participants, isActive }) => {
             <div className='flex items-center space-x-4'>
               <div className='text-right'>
                 <div className='text-sm font-semibold text-gray-900'>
-                  {participant.totalFocusMinutes} / {participant.targetHour} hours
+                  {Math.floor((participant.totalFocusMinutes/60 * 100))/100} h / {participant.targetHour} hours
                 </div>
                 <div className='text-xs text-gray-500'>
                   {Math.round((participant.totalFocusMinutes/60 / participant.targetHour) * 100)}% complete

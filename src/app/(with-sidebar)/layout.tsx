@@ -1,9 +1,26 @@
 "use client";
 import Sidebar from "@/components/Sidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    // Return a static version for SSR to prevent hydration mismatch
+    return (
+      <div className="flex h-screen">
+        <div className="flex-1 p-6 overflow-y-auto bg-gray-100">
+          {children}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen">
       {/* Sidebar */}

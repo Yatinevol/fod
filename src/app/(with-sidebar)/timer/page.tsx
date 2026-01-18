@@ -73,6 +73,40 @@
 
         },[session?.user])
 
+        // Goal fetch:
+        useEffect(()=>{
+            const fetchUserGoals = async()=>{
+                if(!session?.user)return;
+                try {
+                    const response = await axios.get("/api/timer")
+                    console.log("goals response:",response);
+                    let tGoalS = response.data
+                    if(response.data.todayGoal.isTodayGoalSet){
+                        setIsTodayGoalSet(true)
+                        setLockedTodayGoal(tGoalS.todayGoal.targetMinutes)
+                        setGoalTHr(tGoalS.todayGoal.targetMinutes)
+                        if(!isSessionActive){
+                            console.log("fetchUser:",tGoalS.todayGoal.totalFocusMinutes);
+                            setFocusedMinutes(tGoalS.todayGoal.totalFocusMinutes)
+                        }
+                    }
+                    if(tGoalS.weekGoal.isWeekGoalSet){
+                        setIsWeekGoalSet(tGoalS.weekGoal.isWeekGoalSet)
+                        setLockedWeekGoal(tGoalS.weekGoal.targetMinutes)
+                        setGoalWeekHr(tGoalS.weekGoal.targetMinutes)
+                        // if(!isSessionActive){
+                        //      console.log("fetchUser2:",tGoalS.weekGoal.totalFocusMinutes);
+                        //     setFocusedMinutes(tGoalS.weekGoal.totalFocusMinutes)
+                        // }
+                    }
+                } catch (error) {
+                      console.error('Failed to fetch goals:', error);
+                }
+            }
+            if (session?.user) {
+                fetchUserGoals();
+            }
+        },[session?.user, isSessionActive])
         // SESSION FUNCTIONS - NEW
         const handleCreateSession = async()=>{
             setIsCreating(true)
@@ -106,6 +140,23 @@
                 console.log("handle update progress console",response);
                 if(response.data.success){
                     setParticipants(response.data.session.participants)
+                }
+            } catch (error) {
+            console.error('Failed to update progress:', error);
+            }
+        }
+        const handleGoalProgress = async(focusedMinutes:number)=>{
+            try {
+                const response = await axios.post('/api/timer/update-timer',
+                    {focusedMinutes, isWeekly: !todayTrue})
+                console.log("handle goal progress console",response);
+                if(response.data.message === "Today Goal updated successfully"){
+                    console.log("response:",response.data.focusedMinutes);
+                    setFocusedMinutes(response.data.focusedMinutes)
+                }
+                if(response.data.message === "Weekly goal updated successfully"){
+                    console.log("response:",response.data.totalFocusMinutes);
+                    setFocusedMinutes(response.data.totalFocusMinutes)
                 }
             } catch (error) {
             console.error('Failed to update progress:', error);
@@ -165,9 +216,16 @@
                     setSessionId('')
                     setIsSessionActive(false)
                     setParticipants([])
+                    setForHost(false);
+            
+                    toast.success("Left session successfully");
                 }
             } catch (error) {
-                
+                console.error('Failed to leave session:', error);
+                const errorMessage = axios.isAxiosError(error) && error.response?.data?.message
+                    ? error.response.data.message
+                    : "Failed to leave session";
+                toast.error(errorMessage);
             }
         }
         const handleEndSession = async() => {
@@ -180,10 +238,14 @@
                     setIsSessionActive(false)
                     setSessionId('')
                     setSessionLink('')
-
+                    toast.success("Ended session successfully");
                 }
             } catch (error) {
-                
+                console.error('Failed to end session:', error);
+                return Response.json({
+                    success: false,
+                    message: "Failed to end session"
+                }, { status: 500 });
             }
             
         };
@@ -243,6 +305,8 @@
                         if(isSessionActive && sessionId){
                             console.log("newFocusMinutes:",newFocusM);
                             handleUpdateProgress(newFocusM)
+                        }else{
+                            handleGoalProgress(newFocusM)
                         }
                         if (timerRef.current) {
                             clearInterval(timerRef.current);
@@ -293,11 +357,33 @@
         
         const isSet = todayTrue ? isTodayGoalSet : isWeekGoalSet;
         const currentLockedGoal = todayTrue ? lockedTodayGoal : lockedWeekGoal;
-        const handleSetGoal = ()=>{
+        const handleSetGoal = async()=>{
             if(todayTrue && goalTHr > 0){
+                try {
+                    const response = await axios.post("/api/timer/update-timer",{
+                        goalTHr,
+                        goalWeekHr,
+                        isWeekly: !todayTrue,
+                        focusedMinutes
+                    })
+                    console.log("handle set goal",response);
+                } catch (error) {
+                    
+                }
                 setIsTodayGoalSet(true)
                 setLockedTodayGoal(goalTHr)
             }else if(!todayTrue && goalWeekHr > 0){
+                try {
+                    const response = await axios.post("/api/timer/update-timer",{
+                        goalTHr,
+                        goalWeekHr,
+                        isWeekly: true,
+                        focusedMinutes
+                    })
+                    console.log("handle set goal",response);
+                } catch (error) {
+                    
+                }
                 setIsWeekGoalSet(true)
                 setLockedWeekGoal(goalWeekHr);
             }
@@ -393,7 +479,7 @@
                             <h4 className='text-gray-700 font-medium'>Progress for {todayTrue ? "Today's" : "This Week's"} Goal</h4>
                             <div className='text-sm font-semibold text-gray-600'>
                                 {/* {Math.round(focusedMinutes/60 * 10) / 10} */}
-                                {Math.floor(focusedMinutes/60)}h{focusedMinutes % 60}m/ {isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)} hours
+                                {Math.floor(focusedMinutes/60)} h {focusedMinutes % 60} m / {isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)} hours
                             </div>
                         </div>
                         

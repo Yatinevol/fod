@@ -1,3 +1,4 @@
+"use client";
 import { Calendar1, LayoutDashboard, ListChecks,Timer, X } from 'lucide-react';
 import Link from 'next/link';
 
@@ -37,7 +38,7 @@ const Sidebar = ({isOpen, setIsOpen}:any) => {
             </li>
 
           <li>
-              <Link href="/goal" className='flex items-center space-x-2 text-black'>
+              <Link href="/timer" className='flex items-center space-x-2 text-black'>
                 <Timer size={18} color='black' />
                 <span >Timer</span>
               </Link>

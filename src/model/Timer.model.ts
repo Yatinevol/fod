@@ -2,23 +2,24 @@ import mongoose,{ Schema, Types} from "mongoose";
 import { GoalI } from "./Goal.model";
 import { User } from "./User.model";
 
-export interface TaskEntry {
-    taskId: Types.ObjectId | GoalI;
-    title: string;
-    totalFocusMinutes: number;
-}
-const TaskEntrySchema = new Schema({
-    goalId: { type: Schema.Types.ObjectId, ref: 'Goal', required: true },
-    title: { type: String, required: true },
-    totalFocusMinutes: { type: Number, required: true }
-});
+// export interface TaskEntry {
+//     taskId: Types.ObjectId | GoalI;
+//     title: string;
+//     totalFocusMinutes: number;
+// }
+// const TaskEntrySchema = new Schema({
+//     goalId: { type: Schema.Types.ObjectId, ref: 'Goal', required: true },
+//     title: { type: String, required: true },
+//     totalFocusMinutes: { type: Number, required: true }
+// });
 
 export interface TimerI{
     userId: Types.ObjectId | User ;
     date : string;
     totalFocusMinutes: number;
     targetMinutes: number;
-    tasks: TaskEntry[]
+    isWeekly: boolean
+    // tasks: TaskEntry[]
 }
 
 const timerSchema  = new Schema<TimerI>({
@@ -39,10 +40,16 @@ const timerSchema  = new Schema<TimerI>({
         type: Number, 
         required: true 
     },
-    tasks: { 
-        type: [TaskEntrySchema], 
-        default: [] 
+    isWeekly:{
+        type:Boolean,
+        default:false,
+        
     }
+    // ,
+    // tasks: { 
+    //     type: [TaskEntrySchema], 
+    //     default: [] 
+    // }
 },{timestamps:true})
 
 const TimerModel = (mongoose.models.Timer as mongoose.Model<TimerI>) ||
