@@ -14,7 +14,7 @@ const CategorySchema = new Schema<CategoryI>({
     name: { 
         type: String, 
         required: true,
-         unique: true
+        //  unique: true
          }
     ,
     userId:{
@@ -25,6 +25,10 @@ const CategorySchema = new Schema<CategoryI>({
     
 
 },{timestamps:true})
+CategorySchema.index(
+  { name: 1, userId: 1 },
+  { unique: true }
+);
 
 const CategoryModal = (mongoose.models.Category as mongoose.Model<CategoryI>) || mongoose.model<CategoryI>("Category",CategorySchema)
 

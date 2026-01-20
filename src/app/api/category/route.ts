@@ -28,7 +28,7 @@ export async function POST(request:NextRequest) {
             },{status: 400})
         }
 
-        const categoryExist = await CategoryModal.findOne({category, userId:user._id})
+        const categoryExist = await CategoryModal.findOne({name:category, userId:user._id})
         if(categoryExist){
             return Response.json({
                 success: false,
@@ -70,7 +70,7 @@ export async function GET(request:NextRequest) {
         const categories = await CategoryModal.find({
             userId: user._id,
         })
-
+        
         if(categories.length===0){
             return Response.json({
                 success: false,
