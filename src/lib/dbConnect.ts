@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 type ConnectionObject= {
     isConnected? : number
 }
-const DBNAME = "fod"
+// const DBNAME = "fod" - Removed unused variable
 const connection:ConnectionObject = {}
 export const dbConnect = async function():Promise<void>{
     if(connection.isConnected){

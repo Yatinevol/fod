@@ -60,7 +60,7 @@ export async function PATCH(request:NextRequest,{params}:{params:{goalId:string}
 
         const user:User = session.user
 
-        const update: any  = {}
+        const update: Record<string, unknown> = {}
         // an array to return values if they are defined:
         let updatedFields = []
 

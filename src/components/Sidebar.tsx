@@ -1,8 +1,8 @@
 "use client";
-import { Calendar1, LayoutDashboard, ListChecks,Timer, X } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Timer, X, Menu } from 'lucide-react';
 import Link from 'next/link';
 
-const Sidebar = ({isOpen, setIsOpen}:any) => {
+const Sidebar = ({isOpen, setIsOpen}: {isOpen: boolean, setIsOpen: (open: boolean) => void}) => {
   
   return (
     <div className='relative'>
@@ -12,7 +12,7 @@ const Sidebar = ({isOpen, setIsOpen}:any) => {
             onClick={()=> setIsOpen(true)} 
             className="fixed top-4 left-4 p-3 rounded-lg z-50 bg-white shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300"
           >
-            <Calendar1
+            <Menu
               className="transition-transform duration-300 ease-in-out"
               color="black"
               size={20}

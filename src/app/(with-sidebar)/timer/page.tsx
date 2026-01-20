@@ -3,7 +3,7 @@
     import Session from '@/components/Session';
     import axios from 'axios';
     import { useSession } from 'next-auth/react';
-    import React, { useEffect, useRef, useState } from "react";
+    import React, { useCallback, useEffect, useRef, useState } from "react";
     import { toast } from 'sonner';
 
     const Timer = () => {
@@ -80,7 +80,7 @@
                 try {
                     const response = await axios.get("/api/timer")
                     console.log("goals response:",response);
-                    let tGoalS = response.data
+                    const tGoalS = response.data
                     if(response.data.todayGoal.isTodayGoalSet){
                         setIsTodayGoalSet(true)
                         setLockedTodayGoal(tGoalS.todayGoal.targetMinutes)
@@ -168,14 +168,14 @@
                 toast("link copied")
                 }
         
-        const handleGetSessionParticipants = async()=>{
+        const handleGetSessionParticipants = useCallback(async()=>{
             if(sessionId){
                 const response = await axios.get(`/api/session/${sessionId}`)
                 const {participants} = response.data
                 // console.log("participants of session",participants);
                 setParticipants(participants)
             }
-        }
+        }, [sessionId])
         const [isJoinSession, setIsJoinSession] = useState(false)
         const [forHost, setForHost] = useState(true)
         const handleSessionJoin = async()=>{
@@ -286,7 +286,7 @@
                 }
                 setIsPlaying(false);
             } else {
-                let totalSecs = workHr * 3600 + workMin * 60 + workSec;
+                const totalSecs = workHr * 3600 + workMin * 60 + workSec;
                 setIsPlaying(true);
                 
                 totalSecsRef.current = totalSecs;
@@ -296,11 +296,11 @@
                     totalSecsRef.current--
                     
                     if (totalSecsRef.current <= 0) {
-                        let updateProgress = initialTimeRef.current - totalSecsRef.current
+                        const updateProgress = initialTimeRef.current - totalSecsRef.current
                         console.log("updateProgress",updateProgress);
-                        let updateProgressInMins  = Math.floor(updateProgress/60)
+                        const updateProgressInMins  = Math.floor(updateProgress/60)
                         console.log("updateProgressInHours",updateProgressInMins);
-                        let newFocusM = updateProgressInMins + focusedMinutes
+                        const newFocusM = updateProgressInMins + focusedMinutes
                         setFocusedMinutes((prev)=> prev + updateProgressInMins)
                         if(isSessionActive && sessionId){
                             console.log("newFocusMinutes:",newFocusM);
@@ -347,9 +347,9 @@
                 timerRef.current = null
             }
             setIsPlaying(false)
-            let hour = Math.floor(breakTime / 60);
-            let min = breakTime % 60;
-            let sec = 0;
+            const hour = Math.floor(breakTime / 60);
+            const min = breakTime % 60;
+            const sec = 0;
             setWorkHr(hour)
             setWorkMin(min)
             setWorkSec(sec)
@@ -367,8 +367,8 @@
                         focusedMinutes
                     })
                     console.log("handle set goal",response);
-                } catch (error) {
-                    
+                } catch {
+                    // Error handling can be added here if needed
                 }
                 setIsTodayGoalSet(true)
                 setLockedTodayGoal(goalTHr)
@@ -381,8 +381,8 @@
                         focusedMinutes
                     })
                     console.log("handle set goal",response);
-                } catch (error) {
-                    
+                } catch {
+                    // Error handling can be added here if needed
                 }
                 setIsWeekGoalSet(true)
                 setLockedWeekGoal(goalWeekHr);
@@ -406,7 +406,7 @@
             if(isSessionActive){
                 handleGetSessionParticipants()
             }
-        },[sessionId])
+        },[sessionId, isSessionActive, handleGetSessionParticipants])
     return (
         <div className="space-y-8">
             <div className='flex justify-between border-b-2 border-gray-300 pb-2 mb-4'>
@@ -617,7 +617,7 @@
                             {/* For participants, show simpler info */}
                             {!forHost && (
                                 <div className='text-xs text-gray-600 text-center'>
-                                    You're participating in this weekly goal session
+                                    You&apos;re participating in this weekly goal session
                                 </div>
                             )}
                         </div>

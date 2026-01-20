@@ -31,7 +31,7 @@ const SignUp = () => {
         try {
             const response = await axios.post("/api/sign-up",data)
             if(!response.data.success){
-                let errorMessage = response?.data.message
+                const errorMessage = response?.data.message
                 return toast(errorMessage)
             }
 
@@ -42,7 +42,7 @@ const SignUp = () => {
             console.log("Error in signup of user",error);
             const axiosError = error as AxiosError<ApiResponse>
 
-            let errorMessage = axiosError.response?.data.message
+            const errorMessage = axiosError.response?.data.message
             toast("Signup failed",{
                 description: errorMessage,})
                 setIsSubmitting(false)

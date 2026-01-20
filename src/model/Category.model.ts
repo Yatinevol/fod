@@ -1,4 +1,3 @@
-import z from "zod";
 import mongoose,{ Schema} from "mongoose";
 import { User } from "./User.model";
 import { Types } from "mongoose";

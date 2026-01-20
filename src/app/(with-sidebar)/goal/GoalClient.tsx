@@ -15,7 +15,7 @@ import { format, toZonedTime } from "date-fns-tz";
 
 
 const Goal = () => {
-  const [loading, setLoading] = useState(false)
+  // Remove unused loading state since it's never used for display
   const [category, setCategory] = useState(""); 
 // for search input
 const [categories, setCategories] = useState(["Today"]); 
@@ -72,7 +72,7 @@ useEffect(()=>{
     handleGetTodaysGoalsCheckbox();
     
   }
-},[session])  
+},[session, status])  
 
 // input value inside add-task modal
 const handleAddTask =async () => {
@@ -95,10 +95,9 @@ const handleAddTask =async () => {
   }
 };
 
-const handleGetTasks = async (category:any)=>{
+const handleGetTasks = async (category: string) => {
   try {
     setActive(category)
-    setLoading(true)
     const response = await axios.get(`/api/goal/category/${category}`)
 
     if(response.data.success){
@@ -129,17 +128,14 @@ const handleGetTasks = async (category:any)=>{
     toast("Error", {
       description: errorMessage,
     });
-  }finally{
-    setLoading(false)
   }
 }
 const handleGetCategories = async()=>{
-    setLoading(true)
     try {
       const response = await axios.get<ApiResponse>('/api/category')
       if(response.data.success){
         
-        const apiCategories = response.data.categories?.map((each:any)=>(each.name)) ?? []
+        const apiCategories = response.data.categories?.map((each: { name: string }) => each.name) ?? []
 
         const categoryNames = ["Today",...apiCategories.filter(each=>each!=="Today")]
         console.log("get categories:",categories);
@@ -149,8 +145,6 @@ const handleGetCategories = async()=>{
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>
     toast(axiosError.response?.data.message,{description: axiosError.response?.data.message ??'Failed to fetch message settings',})
-    }finally{
-      setLoading(false)
     }
 }
 const [goalsCompleted, setGoalsCompleted]  = useState<GoalCompletionUI[]>([])
@@ -158,9 +152,9 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
   // So you can directly grab the checked boolean instead of digging into e.target.checked.
   // console.log("check value: ",checked);
   setGoalsCompleted((prev)=>{
-    let dat = new Date()
+    const dat = new Date()
     dat.setHours(0,0,0,0)
-    let date = dat.toISOString().split("T")[0]
+    const date = dat.toISOString().split("T")[0]
     console.log("dat",date);
     if(prev.some((c)=> String(c.goalId) === goalId)){
       return prev.map((c)=>
@@ -170,7 +164,7 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
     return [...prev, {goalId, isCompleted: checked,date, userId:session?.user?._id ?? ""} ];
   })
   try {
-    const [calendarRes, StatusRes] = await Promise.all([
+    const [, StatusRes] = await Promise.all([
       axios.post<ApiResponse>(`/api/calendar-streak/${goalId}`),
       axios.patch<ApiResponse>(`/api/goal/goal-status/${goalId}`,{isCompleted:checked})
 
