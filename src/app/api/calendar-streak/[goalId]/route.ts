@@ -1,9 +1,8 @@
 import { auth } from "@/auth";
 import { dbConnect } from "@/lib/dbConnect";
 import CalendarTickModel from "@/model/CalendarTick.model";
-import GoalModel, { GoalI } from "@/model/Goal.model";
+import GoalModel from "@/model/Goal.model";
 import { format, toZonedTime } from "date-fns-tz";
-import mongoose from "mongoose";
 import { User } from "next-auth";
 import { NextRequest } from "next/server";
 
@@ -24,7 +23,6 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
         }
 
         const user:User = session.user
-        const userId = new mongoose.Types.ObjectId(user._id);
         const goalExists = await GoalModel.findOne({userId:user._id, _id: goalId})
         if(!goalExists){
             return Response.json({
@@ -74,8 +72,7 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
             data : calendarExist
         },{status: 200})
        
-    } catch (error) {
-        console.error("Error changing status of calendar:", error);
+    } catch {
         return Response.json({
           success: false,
           message: "Goal calendar status",

@@ -4,8 +4,9 @@ import { Session } from "@/model/Session.model";
 import { User } from "next-auth";
 import { NextRequest } from "next/server";
 
-export async function POST(request:NextRequest,{params}:{params:{sessionId:string}}) {
+export async function POST(request:NextRequest,context:{params:Promise<{sessionId:string}>}) {
     try {
+        const {sessionId} = await context.params
         const session = await auth()
         if(!session || !session.user){
              return Response.json(
@@ -17,7 +18,6 @@ export async function POST(request:NextRequest,{params}:{params:{sessionId:strin
 
         await dbConnect();
         const user:User = session.user
-        const {sessionId} =await params
         const sessionFound = await Session.findOne({
             sessionId,
             isActive:true
@@ -53,8 +53,7 @@ export async function POST(request:NextRequest,{params}:{params:{sessionId:strin
             finalSession: sessionFound
         });
 
-    } catch (error) {
-        console.error('Failed to end session:', error);
+    } catch {
         return Response.json({ error: "Failed to end session" }, { status: 500 });
     }
 }

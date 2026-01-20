@@ -7,8 +7,8 @@ import { User } from "next-auth";
 import { NextRequest } from "next/server";
 
 
-export async function DELETE(request:NextRequest,{params}:{params: {goalId:string}}) {
-    const goalId = params.goalId
+export async function DELETE(request:NextRequest,context:{params: Promise<{goalId:string}>}) {
+    const {goalId} = await context.params
     await dbConnect()
 
     try {
@@ -35,8 +35,7 @@ export async function DELETE(request:NextRequest,{params}:{params: {goalId:strin
             success: true,
             message: "Goal deleted"
         },{status: 200})
-    } catch (error) {
-        console.error("error deleting goal:",error)
+    } catch {
         return Response.json({
             success: false,
             message: "Error deleting message"
@@ -44,8 +43,8 @@ export async function DELETE(request:NextRequest,{params}:{params: {goalId:strin
     }
 }
 
-export async function PATCH(request:NextRequest,{params}:{params:{goalId:string}}) {
-    const goalId = params.goalId
+export async function PATCH(request:NextRequest,context:{params:Promise<{goalId:string}>}) {
+    const {goalId} = await context.params
     const {isActive, title} = await request.json()
 
     await dbConnect()
@@ -62,7 +61,7 @@ export async function PATCH(request:NextRequest,{params}:{params:{goalId:string}
 
         const update: Record<string, unknown> = {}
         // an array to return values if they are defined:
-        let updatedFields = []
+        const updatedFields = []
 
         if(isActive !== undefined) {
             update.isActive = isActive 
@@ -101,8 +100,7 @@ export async function PATCH(request:NextRequest,{params}:{params:{goalId:string}
             success: true,
             message: `Updated ${updatedFields.join(" and ")} successfully`
         },{status: 200})
-    } catch (error) {
-        console.error("Something went wrong, updating the goal",error)
+    } catch {
         return Response.json({
             success: false,
             message: "Nothing found to update"

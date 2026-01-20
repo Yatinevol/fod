@@ -5,8 +5,9 @@ import { User } from "next-auth";
 import { NextRequest } from "next/server";
 
 
-export async function POST(request:NextRequest,{params}:{params:{sessionId: string}}) {
+export async function POST(request:NextRequest,context:{params:Promise<{sessionId: string}>}) {
     try {
+        const {sessionId} = await context.params
         const session = await auth()
 
         if(!session || !session.user){
@@ -20,7 +21,6 @@ export async function POST(request:NextRequest,{params}:{params:{sessionId: stri
         await dbConnect()
 
         const user:User = session.user
-        const {sessionId} = await params;
         const {focusedMinutes} = await request.json()
         if(focusedMinutes < 0){
             return Response.json({
@@ -79,8 +79,7 @@ export async function POST(request:NextRequest,{params}:{params:{sessionId: stri
             message: "Progress updated successfully",
             session: updateSession
         });
-    } catch (error) {
-        console.error('Failed to update progress:', error);
+    } catch {
         return Response.json({ 
             success: false,
             message: "Failed to update progress" 

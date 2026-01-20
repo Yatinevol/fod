@@ -46,8 +46,7 @@ export async function GET() {
                 weeklyGoalHours: sessionInfoFound.weeklyGoalHours
             }
         })
-    } catch (error) {
-        console.error('Failed to get user active session:', error);
+    } catch {
         return Response.json({ 
             success: false,
             error: "Failed to get user session" 

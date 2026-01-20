@@ -1,54 +1,49 @@
 "use client"
 
 import { Calendar } from '@/components/ui/calendar'
-import { CalendarTick, PopulatedCalendarGoalI } from '@/model/CalendarTick.model'
+import { PopulatedCalendarGoalI } from '@/model/CalendarTick.model';
 import { ApiResponse } from '@/Types/ApiResponse'
 import axios from 'axios'
 import { isSameDay } from 'date-fns'
 import { enGB } from 'date-fns/locale'
 import React, { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 const Dashboard = () => {
   const [date, setDate] = useState<Date>()
   const isTodaySelected = date && isSameDay(new Date(),date);
   const [isClient, setIsClient] = useState(false)
-  const [complete, setComplete] = useState<Date>()
+  const [complete, setComplete] = useState<Date[]>([])
   const [todaysGreenTickTasks, setTodaysGreenTickTasks] = useState<PopulatedCalendarGoalI[]>([])
   const [dashboardTodayTask, setDashboardTodayTask] = useState<string[]>([])
   const handleGreenTickTasks= async()=>{
       try {
         const response = await axios.get<ApiResponse>('/api/calendar-streak')
-        // console.log("green tick response:",response.data.data);
         if(response.data.success){
-          const greenTickArr = response.data.data;
-          setTodaysGreenTickTasks(response.data.data);
-          console.log("greenticck",greenTickArr);
-          // console.log("lets go",todaysGreenTickTasks);
-          const completeDates = greenTickArr.map((e:CalendarTick)=>{
+          const greenTickArr = response.data.data as PopulatedCalendarGoalI[];
+          setTodaysGreenTickTasks(greenTickArr);
+          const completeDates = greenTickArr.map((e:PopulatedCalendarGoalI)=>{
             if(e.earnedGreenTick){
               return new Date(e.date)
             }
-          }).filter(Boolean);
-          // console.log("completeDates array",completeDates);
+          }).filter((date): date is Date => date !== undefined);
           setComplete(completeDates);
         }
-      } catch (error) {
-        
+      } catch {
+        toast.error('Failed to fetch calendar data');
       }
   }
   const [para, setPara] = useState(false)
   const handleSelectedDate = async(selectedDate:Date | undefined)=>{
         setPara(true)
-        console.log("selected date",selectedDate);
         
         try {
           const titleArrForSelectedDates = todaysGreenTickTasks
           .filter((e)=> selectedDate && isSameDay(selectedDate,new Date(e.date)))
           .flatMap((e)=> e.goals.map(g => g.title))
           setDashboardTodayTask(titleArrForSelectedDates);
-          console.log("get calendar-streak",titleArrForSelectedDates);
-        } catch (error) {
-          
+        } catch {
+          toast.error('Failed to fetch tasks for selected date');
         }
 
   }

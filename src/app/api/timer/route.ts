@@ -3,10 +3,9 @@ import { helper } from "@/helper/endofWeek";
 import { dbConnect } from "@/lib/dbConnect";
 import TimerModel from "@/model/Timer.model";
 import { User } from "next-auth";
-import { NextRequest } from "next/server";
 
 
-export async function GET(request:NextRequest) {
+export async function GET() {
     try {
         const session = await auth()
         if(!session || !session.user){
@@ -54,8 +53,7 @@ export async function GET(request:NextRequest) {
         },{status:200})
       
 
-    } catch (error) {
-        console.error('Failed to get user goals:', error);
+    } catch {
         return Response.json({ 
             error: "Failed to get user goals" 
         }, { status: 500 });

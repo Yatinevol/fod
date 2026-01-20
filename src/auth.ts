@@ -29,15 +29,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return null;
           }
           
-          // console.log(credentials.identifier);
-          // console.log(credentials.identifier.email);
-          // console.log(credentials.password);
           const user = await UserModel.findOne({
             $or:[{email: credentials.identifier as string}, 
               {username: credentials.identifier as string}]
           })
 
-          console.log("user send to token and session:",user);
           if(!user){
             throw new Error("no user found with this email")
           }

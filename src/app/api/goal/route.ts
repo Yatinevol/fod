@@ -11,7 +11,6 @@ export async function POST(request:NextRequest) {
         // it is imp to check authentication api routes so check session exists or not.
 
         const session = await auth()
-        console.log("session",session);
         if(!session || !session.user){
             return Response.json({
                 success: false,
@@ -52,8 +51,7 @@ export async function POST(request:NextRequest) {
        },{status: 201})
 
 
-    } catch (error) {
-     console.error("unexpected error occured",error)
+    } catch {
      return Response.json({
         success: false,
         message: "unexpected error occured creating your activity",

@@ -5,8 +5,9 @@ import { User } from "next-auth";
 import { NextRequest } from "next/server";
 
 
-export async function GET(request:NextRequest,{params}:{params:{sessionId: string}}) {
+export async function GET(request:NextRequest,context:{params:Promise<{sessionId: string}>}) {
     try {
+        const {sessionId} = await context.params
         const session = await auth()
         if (!session?.user) {
             return Response.json({ error: "Unauthorized" }, { status: 401 });
@@ -15,7 +16,6 @@ export async function GET(request:NextRequest,{params}:{params:{sessionId: strin
 
         await dbConnect()
     
-        const {sessionId} = await params
         const user:User = session.user
         const sessionFound = await Session.findOne({
             sessionId
@@ -49,8 +49,7 @@ export async function GET(request:NextRequest,{params}:{params:{sessionId: strin
             session:sessionFound,
             participants:sessionFound.participants
         })
-    } catch (error) {
-        console.error('Failed to get session:', error);
+    } catch {
         return Response.json({ error: "Failed to get session" }, { status: 500 });
     }
 }

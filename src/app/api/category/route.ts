@@ -44,8 +44,7 @@ export async function POST(request:NextRequest) {
             success: true,
             message: `Added new Category ${category}`
         },{status: 200})
-    } catch (error) {
-        console.error("POST /api/category error:", error);
+    } catch {
         return Response.json(
           { success: false, message: "Something went wrong" },
           { status: 500 }
@@ -53,7 +52,7 @@ export async function POST(request:NextRequest) {
     }
 }
 
-export async function GET(request:NextRequest) {
+export async function GET() {
     try {
         await dbConnect()
         const session = await auth()
@@ -83,8 +82,7 @@ export async function GET(request:NextRequest) {
             message: "Successfully fetched all the categories",
             categories
         },{status: 200})
-    } catch (error) {
-        console.error("GET /api/category error:", error);
+    } catch {
         return Response.json(
           { success: false, message: "Something went wrong" },
           { status: 500 }

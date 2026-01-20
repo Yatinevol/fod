@@ -89,8 +89,7 @@ export async function POST(request:NextRequest) {
         }
         
         
-    } catch (error) {
-        console.error('Failed to set goal:', error);
+    } catch {
         return Response.json({ 
             success: false, 
             message: "Failed to set goal" 

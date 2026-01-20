@@ -1,8 +1,6 @@
 "use client"
-import styles from  '@/app/styles/signup.module.css'
 import { Button } from '@/components/ui/button'
 import { Form, FormField, FormItem, FormLabel } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
 import { signUpSchema } from '@/schemas/signUpSchema'
 import { ApiResponse } from '@/Types/ApiResponse'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -39,7 +37,6 @@ const SignUp = () => {
             router.replace('/sign-in');
             setIsSubmitting(false)
         } catch (error) {
-            console.log("Error in signup of user",error);
             const axiosError = error as AxiosError<ApiResponse>
 
             const errorMessage = axiosError.response?.data.message

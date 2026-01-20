@@ -34,8 +34,6 @@
         const [sessionLink, setSessionLink] = useState<string>('');
         const [participants, setParticipants] = useState([]);
 
-        const [isSessionEnded, setIsSessionEnded] = useState(false);
-        const [sessionEndData, setSessionEndData] = useState(null);
         // Use useRef instead of useState for timer
         const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -50,12 +48,10 @@
 
                 try {
                     const response = await axios.get('/api/user/active-session')
-                    console.log("respones from fetchActiveSession",response);
                     if(response.data.hasActiveSession){
                         setIsSessionActive(true);
                         setSessionId(response.data.sessionData.sessionId);
                         setSessionLink(response.data.sessionData.sessionLink);
-                        console.log("object:",response.data.sessionData);
                         setFocusedMinutes(response.data.sessionData.totalFocusMinutes)
                         setGoalWeekHr(response.data.sessionData.weeklyGoalHours);
                         setForHost(response.data.sessionData.isHost);
@@ -64,9 +60,8 @@
                         setParticipants(response.data.sessionData.participants);
                         setTodayTrue(false);
                     }
-                } catch (error) {
-                    console.error('Failed to fetch session state:', error);
-
+                } catch {
+                    toast.error('Failed to fetch session state');
                 }
             }
             fetchActiveSession()
@@ -79,14 +74,12 @@
                 if(!session?.user)return;
                 try {
                     const response = await axios.get("/api/timer")
-                    console.log("goals response:",response);
                     const tGoalS = response.data
                     if(response.data.todayGoal.isTodayGoalSet){
                         setIsTodayGoalSet(true)
                         setLockedTodayGoal(tGoalS.todayGoal.targetMinutes)
                         setGoalTHr(tGoalS.todayGoal.targetMinutes)
                         if(!isSessionActive){
-                            console.log("fetchUser:",tGoalS.todayGoal.totalFocusMinutes);
                             setFocusedMinutes(tGoalS.todayGoal.totalFocusMinutes)
                         }
                     }
@@ -94,13 +87,9 @@
                         setIsWeekGoalSet(tGoalS.weekGoal.isWeekGoalSet)
                         setLockedWeekGoal(tGoalS.weekGoal.targetMinutes)
                         setGoalWeekHr(tGoalS.weekGoal.targetMinutes)
-                        // if(!isSessionActive){
-                        //      console.log("fetchUser2:",tGoalS.weekGoal.totalFocusMinutes);
-                        //     setFocusedMinutes(tGoalS.weekGoal.totalFocusMinutes)
-                        // }
                     }
-                } catch (error) {
-                      console.error('Failed to fetch goals:', error);
+                } catch {
+                    toast.error('Failed to fetch goals');
                 }
             }
             if (session?.user) {
@@ -119,11 +108,8 @@
                 const {sessionLink, sessionId} = response.data
                 setSessionId(sessionId)
                 setSessionLink(sessionLink) 
-                // console.log("session info:", response.data.session);
                 
-            } catch (error) {
-                console.error("Failed to create session:", error); // Just add this
-        
+            } catch {
                 setIsSessionActive(false);
                 const errorMessage = axios.isAxiosError(error) && error.response?.data?.message
                     ? error.response.data.message
@@ -137,34 +123,29 @@
         const handleUpdateProgress = async(focusedMinutes:number)=>{
             try {
                 const response = await axios.post(`/api/session/update-progress/${sessionId}`,{focusedMinutes})
-                console.log("handle update progress console",response);
                 if(response.data.success){
                     setParticipants(response.data.session.participants)
                 }
-            } catch (error) {
-            console.error('Failed to update progress:', error);
+            } catch {
+                toast.error('Failed to update progress');
             }
         }
         const handleGoalProgress = async(focusedMinutes:number)=>{
             try {
                 const response = await axios.post('/api/timer/update-timer',
                     {focusedMinutes, isWeekly: !todayTrue})
-                console.log("handle goal progress console",response);
                 if(response.data.message === "Today Goal updated successfully"){
-                    console.log("response:",response.data.focusedMinutes);
                     setFocusedMinutes(response.data.focusedMinutes)
                 }
                 if(response.data.message === "Weekly goal updated successfully"){
-                    console.log("response:",response.data.totalFocusMinutes);
                     setFocusedMinutes(response.data.totalFocusMinutes)
                 }
-            } catch (error) {
-            console.error('Failed to update progress:', error);
+            } catch {
+                toast.error('Failed to update progress');
             }
         }
         const handleCopyLink= ()=>{
                 navigator.clipboard.writeText(sessionLink)
-                console.log("link copied");
                 toast("link copied")
                 }
         
@@ -172,7 +153,6 @@
             if(sessionId){
                 const response = await axios.get(`/api/session/${sessionId}`)
                 const {participants} = response.data
-                // console.log("participants of session",participants);
                 setParticipants(participants)
             }
         }, [sessionId])
@@ -183,7 +163,6 @@
             setIsJoinSession(true)
             try{
                 const response = await axios.post(`/api/session/join/${extractedSessionId}`)
-                // console.log("response of join session from server side",response.data);
 
                 if(response.data.success){
                     setIsSessionActive(true)
@@ -195,8 +174,7 @@
                     toast.success("Successfully joined session!");
                 }
                 
-            } catch (error) {
-                console.error("Failed to join session:", error);
+            } catch {
                 setIsSessionActive(false);
                 const errorMessage = axios.isAxiosError(error) && error.response?.data?.message
                     ? error.response.data.message
@@ -210,8 +188,6 @@
             try {
                 const response = await axios.post(`/api/session/leave/${sessionId}`)
 
-                console.log("response in handleLeaveSession",response);
-
                 if(!response.data.isSessionActive){
                     setSessionId('')
                     setIsSessionActive(false)
@@ -221,7 +197,6 @@
                     toast.success("Left session successfully");
                 }
             } catch (error) {
-                console.error('Failed to leave session:', error);
                 const errorMessage = axios.isAxiosError(error) && error.response?.data?.message
                     ? error.response.data.message
                     : "Failed to leave session";
@@ -233,19 +208,14 @@
             try {
                 const response = await axios.post(`/api/session/end/${sessionId}`)
 
-                console.log("response form handleendsession",response);
                 if(!response.data.isSessionActive){
                     setIsSessionActive(false)
                     setSessionId('')
                     setSessionLink('')
                     toast.success("Ended session successfully");
                 }
-            } catch (error) {
-                console.error('Failed to end session:', error);
-                return Response.json({
-                    success: false,
-                    message: "Failed to end session"
-                }, { status: 500 });
+            } catch {
+                toast.error("Failed to end session");
             }
             
         };
@@ -279,7 +249,6 @@
         const initialTimeRef = useRef(0);
         const handlePlayTimer = () => {
             if (isPlaying) {
-                console.log("Stopping timer");
                 if (timerRef.current) {
                     clearInterval(timerRef.current);
                     timerRef.current = null;
@@ -292,18 +261,14 @@
                 totalSecsRef.current = totalSecs;
                 initialTimeRef.current = totalSecs;
                 timerRef.current = setInterval(async() => {
-                    console.log("Timer tick, remaining seconds:", totalSecsRef.current);
                     totalSecsRef.current--
                     
                     if (totalSecsRef.current <= 0) {
                         const updateProgress = initialTimeRef.current - totalSecsRef.current
-                        console.log("updateProgress",updateProgress);
                         const updateProgressInMins  = Math.floor(updateProgress/60)
-                        console.log("updateProgressInHours",updateProgressInMins);
                         const newFocusM = updateProgressInMins + focusedMinutes
                         setFocusedMinutes((prev)=> prev + updateProgressInMins)
                         if(isSessionActive && sessionId){
-                            console.log("newFocusMinutes:",newFocusM);
                             handleUpdateProgress(newFocusM)
                         }else{
                             handleGoalProgress(newFocusM)
@@ -360,29 +325,27 @@
         const handleSetGoal = async()=>{
             if(todayTrue && goalTHr > 0){
                 try {
-                    const response = await axios.post("/api/timer/update-timer",{
+                    await axios.post("/api/timer/update-timer",{
                         goalTHr,
                         goalWeekHr,
                         isWeekly: !todayTrue,
                         focusedMinutes
                     })
-                    console.log("handle set goal",response);
                 } catch {
-                    // Error handling can be added here if needed
+                    toast.error('Failed to set goal');
                 }
                 setIsTodayGoalSet(true)
                 setLockedTodayGoal(goalTHr)
             }else if(!todayTrue && goalWeekHr > 0){
                 try {
-                    const response = await axios.post("/api/timer/update-timer",{
+                    await axios.post("/api/timer/update-timer",{
                         goalTHr,
                         goalWeekHr,
                         isWeekly: true,
                         focusedMinutes
                     })
-                    console.log("handle set goal",response);
                 } catch {
-                    // Error handling can be added here if needed
+                    toast.error('Failed to set goal');
                 }
                 setIsWeekGoalSet(true)
                 setLockedWeekGoal(goalWeekHr);

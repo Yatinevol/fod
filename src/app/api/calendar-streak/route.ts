@@ -1,12 +1,10 @@
-import { NextRequest } from "next/server";
 import { auth } from "@/auth";
 import { dbConnect } from "@/lib/dbConnect";
 import CalendarTickModel from "@/model/CalendarTick.model";
-import { format, toZonedTime } from "date-fns-tz";
 import mongoose from "mongoose";
 import { User } from "next-auth";
 
-export async function GET(request: NextRequest){
+export async function GET(){
     try {
         await dbConnect();
 
@@ -34,8 +32,7 @@ export async function GET(request: NextRequest){
             message: "Successfully fetched todays green tick tasks",
             data: todaysGreenTickTasks
         },{status: 200})
-    } catch (error) {
-        console.error("Error fetching today's green tick tasks:", error);
+    } catch {
         return Response.json({
         success: false,
         message: "Failed to fetch today's tasks",

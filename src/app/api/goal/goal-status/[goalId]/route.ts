@@ -21,10 +21,6 @@ export async function PATCH(request:NextRequest,context:{params: Promise<{goalId
             },{status:400})
         }
         const user:User = session?.user
-        // const today = new Date()
-        // today.setHours(0,0,0,0)
-        // const existingDate = today.toISOString().split("T")[0]
-        // console.log("status date:",existingDate);
 
         const timeZone = 'UTC';
         const now = new Date();
@@ -54,8 +50,7 @@ export async function PATCH(request:NextRequest,context:{params: Promise<{goalId
             message: "Task status updated",
             data: goalCompleteCreated
         },{status: 200})
-    } catch (error) {
-        console.error("Error updating GoalCompletion:", error);
+    } catch {
         return Response.json(
             { success: false, message: "Server error", error: String(error) },
             { status: 500 }

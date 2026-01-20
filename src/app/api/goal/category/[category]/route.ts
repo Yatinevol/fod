@@ -6,7 +6,6 @@ import { NextRequest } from "next/server"
 
 export async function GET(request:NextRequest,context:{params: Promise<{category:string}>}) {
     const {category} = await context.params
-    // console.log("category: ",category);
     await dbConnect()
     try {
         const session = await auth()
@@ -39,8 +38,7 @@ export async function GET(request:NextRequest,context:{params: Promise<{category
             message: "Retrieved all goals successfully!",
             goals: goals || {category , goals:[]}
         },{status: 200})
-    } catch (error) {
-        console.error("cannot find the goals:",error)
+    } catch {
         return Response.json({
             success: false,
             message: "category not found"

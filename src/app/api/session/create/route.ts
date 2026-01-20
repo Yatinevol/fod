@@ -25,9 +25,9 @@ export async function POST(request:NextRequest) {
         }
 
         const sessionId = nanoid(8);
-        let now = new Date()
-        let endOfWeek = new Date(now)
-        let daysUntilSunday = (7 - now.getDay()) % 7 
+        const now = new Date()
+        const endOfWeek = new Date(now)
+        const daysUntilSunday = (7 - now.getDay()) % 7 
         endOfWeek.setDate(now.getDate() + daysUntilSunday)
         endOfWeek.setHours(23,59,59,999)
         const newSession = await Session.create({
@@ -51,8 +51,7 @@ export async function POST(request:NextRequest) {
             sessionLink: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/join/${sessionId}`,
             session: newSession
         })
-    } catch (error) {
-        console.error('Failed to create session:', error);
+    } catch {
         return Response.json({ 
             success: false,
             error: "Failed to create session" 

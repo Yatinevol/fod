@@ -1,7 +1,7 @@
 "use client";
 import DateTime from "@/components/DateTime";
 import { MoreHorizontal, X } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from "@mui/material/FormControlLabel";
 import { green } from "@mui/material/colors";
@@ -60,20 +60,6 @@ const router = useRouter()
 // checking authorization of user:
 const {data: session, status} = useSession();
 
-
-useEffect(()=>{
-  if(status === "loading") return;
-  if(!session || !session.user){
-    router.push('/sign-in')
-    return
-  }else{
-    handleGetCategories();
-    handleGetTasks("Today");
-    handleGetTodaysGoalsCheckbox();
-    
-  }
-},[session, status])  
-
 // input value inside add-task modal
 const handleAddTask =async () => {
   try {
@@ -82,7 +68,6 @@ const handleAddTask =async () => {
   
       if(response.data.success){
         toast("Task added successfully")
-        // console.log(response.data);
       }
       setActive(taskCategory);
     }
@@ -106,9 +91,7 @@ const handleGetTasks = async (category: string) => {
       id: task._id,
       title: task.title
      }))
-    //  console.log("categoryTasks: ",categoryTasks);
       setGoals([...categoryTasks])
-      // console.log("task:",goals);
     }else{
       toast("Failed to fetch tasks", {
         description: response.data.message ?? "Unknown error occurred",
@@ -117,20 +100,17 @@ const handleGetTasks = async (category: string) => {
   } catch (error) {
     const axiosError = error as AxiosError<{ message?: string }>;
 
-    // Prefer API-provided error message if available
     const errorMessage =
       axiosError.response?.data?.message ||
       axiosError.message ||
       "Something went wrong while fetching tasks";
-
-    console.error("Error fetching tasks:", errorMessage);
 
     toast("Error", {
       description: errorMessage,
     });
   }
 }
-const handleGetCategories = async()=>{
+const handleGetCategories = useCallback(async()=>{
     try {
       const response = await axios.get<ApiResponse>('/api/category')
       if(response.data.success){
@@ -138,24 +118,19 @@ const handleGetCategories = async()=>{
         const apiCategories = response.data.categories?.map((each: { name: string }) => each.name) ?? []
 
         const categoryNames = ["Today",...apiCategories.filter(each=>each!=="Today")]
-        console.log("get categories:",categories);
 
         setCategories(categoryNames);
       }
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiResponse>
-    toast(axiosError.response?.data.message,{description: axiosError.response?.data.message ??'Failed to fetch message settings',})
+    } catch {
+      toast.error('Failed to fetch categories');
     }
-}
+}, [])
 const [goalsCompleted, setGoalsCompleted]  = useState<GoalCompletionUI[]>([])
 const handleCheckbox = async(checked:boolean,goalId:string)=>{
-  // So you can directly grab the checked boolean instead of digging into e.target.checked.
-  // console.log("check value: ",checked);
   setGoalsCompleted((prev)=>{
     const dat = new Date()
     dat.setHours(0,0,0,0)
     const date = dat.toISOString().split("T")[0]
-    console.log("dat",date);
     if(prev.some((c)=> String(c.goalId) === goalId)){
       return prev.map((c)=>
         String(c.goalId) === goalId ? {...c, isCompleted: checked}: c
@@ -170,33 +145,42 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
 
     ])
     if(StatusRes.data.success){
-      console.log("goals completed status",StatusRes.data.data);
-      // setGoalsCompleted()
+      // Goal status updated successfully
     }
-  } catch (error) {
-    console.error("Error updating earnedGreenTick:", error);
-
+  } catch {
+    toast.error("Failed to update goal status");
   }
 }
 
-const handleGetTodaysGoalsCheckbox= async()=>{
+const handleGetTodaysGoalsCheckbox= useCallback(async()=>{
   try {
     const timeZone = 'UTC';
     const now = new Date();
     const zonedDate =  toZonedTime(now, timeZone);
     const existingDate = format(zonedDate, 'yyyy-MM-dd',{timeZone})
     const response = await axios.get<ApiResponse>(`/api/goal/goal-status?date=${existingDate}`)
-    console.log("handle get today golas", response.data.data);
     if(response.data.success){
-      const completedToday = response.data.data
+      const completedToday = response.data.data as GoalCompletionUI[]
       setGoalsCompleted(completedToday)
-      
-      console.log("goalsToday:",goalsCompleted);
     }
-  } catch (error) {
-    console.log("error fetching todays tasks:",error);
+  } catch {
+    toast.error("Failed to fetch today's goals");
   }
-}
+}, [])
+
+// checking authorization of user with useEffect:
+useEffect(()=>{
+  if(status === "loading") return;
+  if(!session || !session.user){
+    router.push('/sign-in')
+    return
+  }else{
+    handleGetCategories();
+    handleGetTasks("Today");
+    handleGetTodaysGoalsCheckbox();
+    
+  }
+},[session, status, handleGetCategories, handleGetTodaysGoalsCheckbox, router])  
 
   return (
     <div className="max-w-6xl mx-auto px-6 min-h-screen relative">

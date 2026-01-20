@@ -5,8 +5,9 @@ import { User } from "next-auth";
 import { NextRequest } from "next/server";
 
 
-export async function POST(request: NextRequest, { params }: { params: { sessionId: string } }) {
+export async function POST(request: NextRequest, context: { params: Promise<{ sessionId: string }> }) {
     try {
+        const {sessionId} = await context.params
         const session = await auth()
         if(!session || !session.user ){
              return Response.json(
@@ -16,8 +17,6 @@ export async function POST(request: NextRequest, { params }: { params: { session
         
         await dbConnect()
         const user:User = session.user
-        const {sessionId} = await params
-        console.log("session Id value check in server side",sessionId);
         const sessionExist = await Session.findOne({
             sessionId,
             isActive: true
@@ -62,8 +61,7 @@ export async function POST(request: NextRequest, { params }: { params: { session
             message: existingParticipant ? "Already in session" : "Joined successfully"
         });
 
-    } catch (error) {
-        console.error('Failed to join session:', error);
+    } catch {
         return Response.json({ error: "Failed to join session" }, { status: 500 });
     }
 }
