@@ -2,10 +2,9 @@ import { auth } from "@/auth";
 import { dbConnect } from "@/lib/dbConnect";
 import { Session } from "@/model/Session.model";
 import { User } from "next-auth";
-import { NextRequest } from "next/server";
 
 
-export async function GET(request:NextRequest) {
+export async function GET() {
     try {
         const session = await auth();
         if(!session || !session.user){

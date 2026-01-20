@@ -10,7 +10,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     id: "credentials",
     name: "Credentials",
     credentials:{
-          email: {
+          identifier: {
             type: "text",
             label: "Email",
             // placeholder: "johndoe@gmail.com",
@@ -22,15 +22,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           },
     },
     
-    authorize: async (credentials:any, req): Promise<any> =>{
+    authorize: async (credentials) => {
         await dbConnect();
         try {
+          if (!credentials?.identifier || !credentials?.password) {
+            return null;
+          }
+          
           // console.log(credentials.identifier);
           // console.log(credentials.identifier.email);
           // console.log(credentials.password);
           const user = await UserModel.findOne({
-            $or:[{email: credentials.identifier}, 
-              {username: credentials.identifier}]
+            $or:[{email: credentials.identifier as string}, 
+              {username: credentials.identifier as string}]
           })
 
           console.log("user send to token and session:",user);
@@ -38,18 +42,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             throw new Error("no user found with this email")
           }
 
-          const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password)
+          const isPasswordCorrect = await bcrypt.compare(credentials.password as string, user.password)
           if(!isPasswordCorrect){
             throw new Error("incorrect password")
           }
           else{
-           
-            user.password = ""
-            return user
+            // Return a plain object that matches the expected User type
+            return {
+              _id: user._id?.toString(),
+              username: user.username,
+              email: user.email,
+              password: ""
+            }
           }
           
-        } catch (err:any) {
-          throw new Error(err)
+        } catch (err: unknown) {
+          throw new Error(err instanceof Error ? err.message : 'Authentication failed')
         }
     }
     
