@@ -32,7 +32,7 @@ export async function GET(){
             message: "Successfully fetched todays green tick tasks",
             data: todaysGreenTickTasks
         },{status: 200})
-    } catch {
+    } catch (error) {
         return Response.json({
         success: false,
         message: "Failed to fetch today's tasks",

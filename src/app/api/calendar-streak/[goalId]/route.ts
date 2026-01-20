@@ -72,7 +72,7 @@ export async function POST(request:NextRequest,context:{params: Promise<{goalId:
             data : calendarExist
         },{status: 200})
        
-    } catch {
+    } catch (error) {
         return Response.json({
           success: false,
           message: "Goal calendar status",

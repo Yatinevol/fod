@@ -109,7 +109,7 @@
                 setSessionId(sessionId)
                 setSessionLink(sessionLink) 
                 
-            } catch {
+            } catch (error) {
                 setIsSessionActive(false);
                 const errorMessage = axios.isAxiosError(error) && error.response?.data?.message
                     ? error.response.data.message
@@ -174,7 +174,7 @@
                     toast.success("Successfully joined session!");
                 }
                 
-            } catch {
+            } catch (error) {
                 setIsSessionActive(false);
                 const errorMessage = axios.isAxiosError(error) && error.response?.data?.message
                     ? error.response.data.message

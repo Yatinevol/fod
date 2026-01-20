@@ -50,7 +50,7 @@ export async function PATCH(request:NextRequest,context:{params: Promise<{goalId
             message: "Task status updated",
             data: goalCompleteCreated
         },{status: 200})
-    } catch {
+    } catch (error) {
         return Response.json(
             { success: false, message: "Server error", error: String(error) },
             { status: 500 }
