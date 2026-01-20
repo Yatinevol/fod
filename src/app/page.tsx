@@ -1,102 +1,139 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Target, Timer, Users, TrendingUp, CheckCircle2, Calendar } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Navigation */}
+      <nav className="container mx-auto px-6 py-6 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Target className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            FOD
+          </span>
+        </div>
+        <div className="flex gap-4">
+          <Link 
+            href="/sign-in"
+            className="px-6 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+          >
+            Sign In
+          </Link>
+          <Link 
+            href="/sign-up"
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 font-medium transition-colors shadow-lg shadow-blue-500/30"
+          >
+            Get Started
+          </Link>
+        </div>
+      </nav>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Hero Section */}
+      <main className="container mx-auto px-6 py-20">
+        <div className="text-center max-w-4xl mx-auto mb-20">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Focus on Dedication
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8">
+            Track your goals, manage your time, and stay motivated with collaborative Pomodoro sessions
+          </p>
+          <div className="flex gap-4 justify-center flex-wrap">
+            <Link 
+              href="/sign-up"
+              className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 font-semibold text-lg transition-all shadow-lg shadow-blue-500/30 hover:shadow-xl hover:scale-105"
+            >
+              Start Your Journey
+            </Link>
+            <Link 
+              href="/dashboard"
+              className="px-8 py-4 border-2 border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-800 font-semibold text-lg transition-all"
+            >
+              View Dashboard
+            </Link>
+          </div>
+        </div>
+
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Feature 1 */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-shadow border border-gray-100 dark:border-gray-700">
+            <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4">
+              <Target className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Goal Tracking</h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              Set, organize, and track your goals by categories. Mark tasks complete and watch your progress grow.
+            </p>
+          </div>
+
+          {/* Feature 2 */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-shadow border border-gray-100 dark:border-gray-700">
+            <div className="w-14 h-14 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mb-4">
+              <Timer className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Pomodoro Timer</h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              Stay focused with built-in Pomodoro technique. Customize work and break intervals to match your rhythm.
+            </p>
+          </div>
+
+          {/* Feature 3 */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-shadow border border-gray-100 dark:border-gray-700">
+            <div className="w-14 h-14 bg-pink-100 dark:bg-pink-900/30 rounded-xl flex items-center justify-center mb-4">
+              <Users className="w-8 h-8 text-pink-600 dark:text-pink-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Collaborative Sessions</h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              Create or join shared Pomodoro sessions. Study with friends and stay accountable together.
+            </p>
+          </div>
+
+          {/* Feature 4 */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-shadow border border-gray-100 dark:border-gray-700">
+            <div className="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mb-4">
+              <Calendar className="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Streak Calendar</h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              Build consistency with daily streaks. Visualize your dedication with an interactive calendar view.
+            </p>
+          </div>
+
+          {/* Feature 5 */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-shadow border border-gray-100 dark:border-gray-700">
+            <div className="w-14 h-14 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center mb-4">
+              <TrendingUp className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Progress Analytics</h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              Monitor your productivity trends. See which goals need attention and celebrate your wins.
+            </p>
+          </div>
+
+          {/* Feature 6 */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-shadow border border-gray-100 dark:border-gray-700">
+            <div className="w-14 h-14 bg-teal-100 dark:bg-teal-900/30 rounded-xl flex items-center justify-center mb-4">
+              <CheckCircle2 className="w-8 h-8 text-teal-600 dark:text-teal-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">Task Management</h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              Organize tasks by categories, set priorities, and check them off as you complete your daily goals.
+            </p>
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* Footer */}
+      <footer className="container mx-auto px-6 py-12 mt-20 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <span className="text-lg font-bold text-gray-800 dark:text-gray-200">Focus on Dedication</span>
+          </div>
+          <p className="text-gray-600 dark:text-gray-400">
+            © 2026 FOD. Build habits that last.
+          </p>
+        </div>
       </footer>
     </div>
   );
