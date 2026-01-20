@@ -45,6 +45,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           else{
             // Return a plain object that matches the expected User type
             return {
+              id: user._id?.toString() || "",
               _id: user._id?.toString(),
               username: user.username,
               email: user.email,
