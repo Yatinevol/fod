@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   description: "Track your goals, manage your time, and stay motivated with collaborative Pomodoro sessions",
   icons: {
     icon: [
-      { url: '/favicon.ico' },
+      { url: '../public/favicon.ico' },
       { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
     ],

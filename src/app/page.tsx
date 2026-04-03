@@ -3,12 +3,12 @@ import { Target, Timer, Users, TrendingUp, CheckCircle2, Calendar } from "lucide
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Navigation */}
       <nav className="container mx-auto px-6 py-6 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Target className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <span className="text-2xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             FOD
           </span>
         </div>
@@ -31,7 +31,7 @@ export default function Home() {
       {/* Hero Section */}
       <main className="container mx-auto px-6 py-20">
         <div className="text-center max-w-4xl mx-auto mb-20">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
             Focus on Dedication
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8">

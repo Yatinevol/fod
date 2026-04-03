@@ -1,4 +1,4 @@
-    "use client";
+"use client";
     import DateTime from '@/components/DateTime';
     import Session from '@/components/Session';
     import axios from 'axios';
@@ -227,26 +227,98 @@
                 setSavedHr(workHr)
                 setSavedMin(workMin)
                 setSavedSec(workSec)
+                localStorage.setItem('fod_timer_settings', JSON.stringify({
+                    workHr, workMin, workSec, breakTime
+                }))
                 setIsEditingTimer(false)
         }
-        const handleResetTimer = ()=>{
-            let updateProgress = initialTimeRef.current - totalSecsRef.current
-            updateProgress  = Math.floor(updateProgress/3600)
-            setFocusedMinutes((prev)=> prev + updateProgress)   
-            // you have to stop the running timer.
-                if(timerRef.current){
-                    clearInterval(timerRef.current)
-                    timerRef.current = null
-                }
-                setIsPlaying(false)
-                setWorkHr(savedHr);
-                setWorkMin(savedMin);
-                setWorkSec(savedSec);
-            
-        }
-        
         const totalSecsRef = useRef(0); 
         const initialTimeRef = useRef(0);
+
+        // Restore timer from local storage on mount
+        useEffect(() => {
+            const savedSettings = localStorage.getItem('fod_timer_settings');
+            if (savedSettings) {
+                try {
+                    const parsed = JSON.parse(savedSettings);
+                    setSavedHr(parsed.workHr ?? 0);
+                    setSavedMin(parsed.workMin ?? 25);
+                    setSavedSec(parsed.workSec ?? 0);
+                    setBreakTime(parsed.breakTime ?? 5);
+                    
+                    setWorkHr(parsed.workHr ?? 0);
+                    setWorkMin(parsed.workMin ?? 25);
+                    setWorkSec(parsed.workSec ?? 0);
+                } catch (e) {
+                    console.error("Failed to parse timer settings", e);
+                }
+            }
+
+            const savedEndTime = localStorage.getItem('fod_timer_end_time');
+            const savedInitialTime = localStorage.getItem('fod_timer_initial_time');
+            
+            if (savedEndTime && savedInitialTime) {
+                const endTime = parseInt(savedEndTime, 10);
+                const initialTime = parseInt(savedInitialTime, 10);
+                const now = Date.now();
+                
+                if (endTime > now) {
+                    const remainingSecs = Math.floor((endTime - now) / 1000);
+                    initialTimeRef.current = initialTime;
+                    totalSecsRef.current = remainingSecs;
+                    
+                    const hours = Math.floor(remainingSecs / 3600);
+                    const min = Math.floor((remainingSecs % 3600) / 60);
+                    const sec = remainingSecs % 60;
+                    
+                    setWorkHr(hours);
+                    setWorkMin(min);
+                    setWorkSec(sec);
+                    setIsPlaying(true);
+                    
+                    timerRef.current = setInterval(async() => {
+                        const now = Date.now();
+                        totalSecsRef.current = Math.max(0, Math.floor((endTime - now) / 1000));
+                        
+                        if (totalSecsRef.current <= 0) {
+                            const updateProgress = initialTimeRef.current - totalSecsRef.current
+                            const updateProgressInMins  = Math.floor(updateProgress/60)
+                            const newFocusM = updateProgressInMins + focusedMinutes
+                            setFocusedMinutes((prev)=> prev + updateProgressInMins)
+                            if(isSessionActive && sessionId){
+                                handleUpdateProgress(newFocusM)
+                            }else{
+                                handleGoalProgress(newFocusM)
+                            }
+                            if (timerRef.current) {
+                                clearInterval(timerRef.current);
+                                timerRef.current = null;
+                            }
+                            setIsPlaying(false);
+                            setWorkHr(0);
+                            setWorkMin(0);
+                            setWorkSec(0);
+                            localStorage.removeItem('fod_timer_end_time');
+                            localStorage.removeItem('fod_timer_initial_time');
+                            return;
+                        }
+                        
+                        const currentHours = Math.floor(totalSecsRef.current / 3600);
+                        const currentMin = Math.floor((totalSecsRef.current % 3600) / 60);
+                        const currentSec = totalSecsRef.current % 60;
+                        
+                        setWorkHr(currentHours);
+                        setWorkMin(currentMin);
+                        setWorkSec(currentSec);
+                    }, 1000);
+                } else {
+                    localStorage.removeItem('fod_timer_end_time');
+                    localStorage.removeItem('fod_timer_initial_time');
+                }
+            }
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, []); // Run only once on mount
+
         const handlePlayTimer = () => {
             if (isPlaying) {
                 if (timerRef.current) {
@@ -254,14 +326,23 @@
                     timerRef.current = null;
                 }
                 setIsPlaying(false);
+                // Calculate remaining time and store it as frozen or clear
+                localStorage.removeItem('fod_timer_end_time');
+                localStorage.removeItem('fod_timer_initial_time');
             } else {
                 const totalSecs = workHr * 3600 + workMin * 60 + workSec;
                 setIsPlaying(true);
                 
                 totalSecsRef.current = totalSecs;
                 initialTimeRef.current = totalSecs;
+
+                const endTime = Date.now() + totalSecs * 1000;
+                localStorage.setItem('fod_timer_end_time', endTime.toString());
+                localStorage.setItem('fod_timer_initial_time', totalSecs.toString());
+
                 timerRef.current = setInterval(async() => {
-                    totalSecsRef.current--
+                    const now = Date.now();
+                    totalSecsRef.current = Math.max(0, Math.floor((endTime - now) / 1000));
                     
                     if (totalSecsRef.current <= 0) {
                         const updateProgress = initialTimeRef.current - totalSecsRef.current
@@ -281,6 +362,8 @@
                         setWorkHr(0);
                         setWorkMin(0);
                         setWorkSec(0);
+                        localStorage.removeItem('fod_timer_end_time');
+                        localStorage.removeItem('fod_timer_initial_time');
                         return;
                     }
                     
@@ -312,12 +395,30 @@
                 timerRef.current = null
             }
             setIsPlaying(false)
+            localStorage.removeItem('fod_timer_end_time');
+            localStorage.removeItem('fod_timer_initial_time');
             const hour = Math.floor(breakTime / 60);
             const min = breakTime % 60;
             const sec = 0;
             setWorkHr(hour)
             setWorkMin(min)
             setWorkSec(sec)
+        }
+
+        const handleResetTimer = ()=>{
+            let updateProgress = initialTimeRef.current - totalSecsRef.current
+            updateProgress  = Math.floor(updateProgress/3600)
+            setFocusedMinutes((prev)=> prev + updateProgress)   
+            if(timerRef.current){
+                clearInterval(timerRef.current)
+                timerRef.current = null
+            }
+            setIsPlaying(false)
+            localStorage.removeItem('fod_timer_end_time');
+            localStorage.removeItem('fod_timer_initial_time');
+            setWorkHr(savedHr);
+            setWorkMin(savedMin);
+            setWorkSec(savedSec);
         }
         
         const isSet = todayTrue ? isTodayGoalSet : isWeekGoalSet;
@@ -601,7 +702,7 @@
                     
                     {/* Settings Container */}
                     {isEditingTimer && (
-                        <div className='absolute top-[72px] left-6 right-6 bottom-6 bg-white rounded-lg z-10 p-0 flex flex-col'>
+                        <div className='absolute top-18 left-6 right-6 bottom-6 bg-white rounded-lg z-10 p-0 flex flex-col'>
                             <div className='flex justify-between items-center mb-6'>
                                 <h2 className='text-lg font-semibold'>Timer Settings</h2>
                                 <button onClick={handleEditTimer} className='p-2 text-gray-600 hover:text-gray-800 transition-colors rounded-md hover:bg-gray-100'>

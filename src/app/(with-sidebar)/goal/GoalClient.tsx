@@ -1,7 +1,7 @@
 "use client";
 import DateTime from "@/components/DateTime";
-import { MoreHorizontal, X } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import { MoreHorizontal, X, Pencil, Trash2 } from "lucide-react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from "@mui/material/FormControlLabel";
 import { green } from "@mui/material/colors";
@@ -54,6 +54,16 @@ type Goal = {
 };
 
 const [goals, setGoals] = useState<Goal[]>([]); 
+
+// Edit/Delete task states
+const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+const [showEditModal, setShowEditModal] = useState(false);
+const [showDeleteModal, setShowDeleteModal] = useState(false);
+const [editingTask, setEditingTask] = useState<Goal | null>(null);
+const [editTaskTitle, setEditTaskTitle] = useState("");
+const [isDeleting, setIsDeleting] = useState(false);
+const [isEditing, setIsEditing] = useState(false);
+const menuRef = useRef<HTMLDivElement>(null);
 
 const router = useRouter()
 
@@ -168,6 +178,81 @@ const handleGetTodaysGoalsCheckbox= useCallback(async()=>{
   }
 }, [])
 
+// Close menu when clicking outside
+useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setOpenMenuId(null);
+    }
+  };
+  document.addEventListener('mousedown', handleClickOutside);
+  return () => document.removeEventListener('mousedown', handleClickOutside);
+}, []);
+
+// Handle opening edit modal
+const handleEditClick = (task: Goal) => {
+  setEditingTask(task);
+  setEditTaskTitle(task.title);
+  setShowEditModal(true);
+  setOpenMenuId(null);
+};
+
+// Handle opening delete modal
+const handleDeleteClick = (task: Goal) => {
+  setEditingTask(task);
+  setShowDeleteModal(true);
+  setOpenMenuId(null);
+};
+
+// Handle renaming a task
+const handleRenameTask = async () => {
+  if (!editingTask || !editTaskTitle.trim()) return;
+  
+  setIsEditing(true);
+  try {
+    const response = await axios.patch<ApiResponse>(`/api/goal/${editingTask.id}`, {
+      title: editTaskTitle.trim()
+    });
+    
+    if (response.data.success) {
+      setGoals(prev => prev.map(goal => 
+        goal.id === editingTask.id ? { ...goal, title: editTaskTitle.trim() } : goal
+      ));
+      toast.success("Task renamed successfully");
+      setShowEditModal(false);
+      setEditingTask(null);
+      setEditTaskTitle("");
+    }
+  } catch (error) {
+    const axiosError = error as AxiosError<ApiResponse>;
+    toast.error(axiosError.response?.data?.message || "Failed to rename task");
+  } finally {
+    setIsEditing(false);
+  }
+};
+
+// Handle deleting a task
+const handleDeleteTask = async () => {
+  if (!editingTask) return;
+  
+  setIsDeleting(true);
+  try {
+    const response = await axios.delete<ApiResponse>(`/api/goal/${editingTask.id}`);
+    
+    if (response.data.success) {
+      setGoals(prev => prev.filter(goal => goal.id !== editingTask.id));
+      toast.success("Task deleted successfully");
+      setShowDeleteModal(false);
+      setEditingTask(null);
+    }
+  } catch (error) {
+    const axiosError = error as AxiosError<ApiResponse>;
+    toast.error(axiosError.response?.data?.message || "Failed to delete task");
+  } finally {
+    setIsDeleting(false);
+  }
+};
+
 // checking authorization of user with useEffect:
 useEffect(()=>{
   if(status === "loading") return;
@@ -195,7 +280,7 @@ useEffect(()=>{
       <div className="flex items-center gap-3">
         {/* Enhanced Add Category Section */}
         <div className="flex items-center gap-2 border border-gray-200 rounded-lg bg-white shadow-sm overflow-hidden">
-          <div className="relative flex-1 min-w-[140px]">
+          <div className="relative flex-1 min-w-35">
             <input
               type="text"
               placeholder="New category..."
@@ -273,8 +358,8 @@ useEffect(()=>{
 
           {/* Animated underline */}
           <span
-            className={`absolute rounded-4xl left-0 bottom-0 h-[2px] 
-              bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 
+            className={`absolute rounded-4xl left-0 bottom-0 h-0.5 
+              bg-linear-to-r from-cyan-400 via-blue-500 to-indigo-600 
               transition-all duration-300 
               ${active === each ? "w-full" : "w-0"}`}
           />
@@ -285,7 +370,7 @@ useEffect(()=>{
         {/* 🟣 Modal for Adding Task */}
   {showTaskModal && (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-2xl shadow-lg w-[400px] relative">
+    <div className="bg-white p-6 rounded-2xl shadow-lg w-100 relative">
       {/* Close button */}
       <button
         onClick={() => setShowTaskModal(false)}
@@ -358,13 +443,143 @@ useEffect(()=>{
                 }}
               />
             }
-            label={task.title}
+            label={
+              <div className="flex items-center gap-2">
+                <span className={goalsCompleted.some(c => String(c.goalId) === task.id && c.isCompleted) ? "text-gray-500 line-through" : "text-gray-900 font-medium"}>
+                  {task.title}
+                </span>
+              </div>
+            }
           />
-          <MoreHorizontal className="text-gray-400 cursor-pointer" />
+          {/* Dropdown Menu */}
+          <div className="relative" ref={openMenuId === task.id ? menuRef : null}>
+            <button
+              onClick={() => setOpenMenuId(openMenuId === task.id ? null : task.id)}
+              className="p-1 hover:bg-gray-100 rounded-full transition"
+            >
+              <MoreHorizontal className="text-gray-400 cursor-pointer" />
+            </button>
+            
+            {/* Dropdown Options */}
+            {openMenuId === task.id && (
+              <div className="absolute right-0 top-8 bg-white border rounded-lg shadow-lg py-1 z-10 min-w-30">
+                <button
+                  onClick={() => handleEditClick(task)}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                >
+                  <Pencil size={16} />
+                  Rename
+                </button>
+                <button
+                  onClick={() => handleDeleteClick(task)}
+                  className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600"
+                >
+                  <Trash2 size={16} />
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       ))
   )}
 </div>
+
+{/* Edit Task Modal */}
+{showEditModal && editingTask && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-2xl shadow-lg w-96 relative">
+      <button
+        onClick={() => {
+          setShowEditModal(false);
+          setEditingTask(null);
+          setEditTaskTitle("");
+        }}
+        className="absolute top-3 right-3 text-gray-500 hover:text-black"
+      >
+        <X size={20} />
+      </button>
+
+      <h2 className="text-xl font-bold mb-4">Rename Task</h2>
+
+      <input
+        type="text"
+        placeholder="Enter new task name..."
+        value={editTaskTitle}
+        onChange={(e) => setEditTaskTitle(e.target.value)}
+        className="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-violet-500"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            handleRenameTask();
+          }
+        }}
+        autoFocus
+      />
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => {
+            setShowEditModal(false);
+            setEditingTask(null);
+            setEditTaskTitle("");
+          }}
+          className="flex-1 py-2 border rounded-lg font-semibold hover:bg-gray-50 transition"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleRenameTask}
+          disabled={!editTaskTitle.trim() || editTaskTitle.trim() === editingTask.title || isEditing}
+          className="flex-1 bg-violet-600 text-white py-2 rounded-lg font-semibold hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        >
+          {isEditing ? "Saving..." : "Save"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* Delete Confirmation Modal */}
+{showDeleteModal && editingTask && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-2xl shadow-lg w-96 relative">
+      <button
+        onClick={() => {
+          setShowDeleteModal(false);
+          setEditingTask(null);
+        }}
+        className="absolute top-3 right-3 text-gray-500 hover:text-black"
+      >
+        <X size={20} />
+      </button>
+
+      <h2 className="text-xl font-bold mb-2">Delete Task</h2>
+      <p className="text-gray-600 mb-6">
+        Are you sure you want to delete &quot;{editingTask.title}&quot;? This action cannot be undone.
+      </p>
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => {
+            setShowDeleteModal(false);
+            setEditingTask(null);
+          }}
+          className="flex-1 py-2 border rounded-lg font-semibold hover:bg-gray-50 transition"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleDeleteTask}
+          disabled={isDeleting}
+          className="flex-1 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+        >
+          {isDeleting ? "Deleting..." : "Delete"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
     </div>
   );
