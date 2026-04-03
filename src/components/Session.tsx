@@ -29,8 +29,8 @@ const Session: React.FC<SessionProps> = ({ participants, isActive }) => {
           <div key={participant.userId} className='flex items-center justify-between p-3 border border-gray-100 rounded-lg'>
             <div className='flex items-center space-x-3'>
               <div className='relative'>
-                <div className='w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center'>
-                  <span className='text-purple-600 font-semibold text-sm'>
+                <div className='w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center'>
+                  <span className='text-blue-600 font-semibold text-sm'>
                     {participant.username.charAt(0)}
                   </span>
                 </div>
@@ -52,7 +52,7 @@ const Session: React.FC<SessionProps> = ({ participants, isActive }) => {
               </div>
               <div className='w-24 h-2 bg-gray-200 rounded-full'>
                 <div 
-                  className='h-2 bg-purple-500 rounded-full transition-all duration-300'
+                  className='h-2 bg-blue-500 rounded-full transition-all duration-300'
                   style={{ width: `${Math.min((participant.totalFocusMinutes/60 / participant.targetHour) * 100, 100)}%` }}
                 ></div>
               </div>

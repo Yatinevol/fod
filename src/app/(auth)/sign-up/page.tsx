@@ -54,7 +54,7 @@ const SignUp = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
-          <p className="text-indigo-200">Join us and start your journey today</p>
+          <p className="text-slate-200">Join us and start your journey today</p>
         </div>
 
         <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl">
@@ -69,7 +69,7 @@ const SignUp = () => {
 
                     
                     <input
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200"
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all duration-200"
                       placeholder="Enter your username"
                       {...field}
                     />
@@ -84,7 +84,7 @@ const SignUp = () => {
                     <FormLabel className="text-sm font-medium text-white/90">Email Address</FormLabel>
                     <input
                       type="email"
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200"
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all duration-200"
                       placeholder="john@example.com"
                       {...field}
                     />
@@ -99,7 +99,7 @@ const SignUp = () => {
                     <FormLabel className="text-sm font-medium text-white/90">Password</FormLabel>
                     <input
                       type="password"
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200"
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all duration-200"
                       placeholder="••••••••"
                       {...field}
                     />
@@ -110,7 +110,7 @@ const SignUp = () => {
               <Button
                 disabled={isSubmitting}
                 type="submit"
-                className="w-full py-3 bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-transparent disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full py-3 bg-linear-to-r from-slate-500 to-blue-600 hover:from-slate-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-transparent disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {isSubmitting ? (
                   <div className="flex items-center justify-center gap-2">
@@ -127,7 +127,7 @@ const SignUp = () => {
           <div className="mt-6 text-center">
             <p className="text-white/70 text-sm">
               Already have an account?{" "}
-              <button className="text-indigo-300 hover:text-indigo-200 font-medium transition-colors duration-200 cursor-pointer"  onClick={navSignIn}>
+              <button className="text-slate-300 hover:text-slate-200 font-medium transition-colors duration-200 cursor-pointer"  onClick={navSignIn}>
                 Sign in
               </button>
             </p>

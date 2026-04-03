@@ -268,25 +268,25 @@ useEffect(()=>{
 },[session, status, handleGetCategories, handleGetTodaysGoalsCheckbox, router])  
 
   return (
-    <div className="max-w-6xl mx-auto px-6 min-h-screen relative">
+    <div className="max-w-5xl mx-auto min-h-screen relative">
     
-    <header className="flex flex-col gap-6 md:flex-row md:justify-between md:items-center">
+    <header className="flex flex-col gap-6 md:flex-row md:justify-between md:items-center bg-white/50 backdrop-blur-xl p-6 rounded-3xl border border-white/60 shadow-xs mb-8">
       {/* Left section: Title only */}
       <div className="flex items-center gap-4 w-full md:w-auto">
-        <h1 className="text-2xl font-bold whitespace-nowrap">Tasks</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-linear-to-br from-slate-800 to-slate-500">Tasks</h1>
       </div>
 
       {/* Right section: Buttons */}
       <div className="flex items-center gap-3">
         {/* Enhanced Add Category Section */}
-        <div className="flex items-center gap-2 border border-gray-200 rounded-lg bg-white shadow-sm overflow-hidden">
+        <div className="flex items-center gap-2 border border-slate-200/60 rounded-xl bg-white shadow-xs overflow-hidden transition-all focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-300">
           <div className="relative flex-1 min-w-35">
             <input
               type="text"
               placeholder="New category..."
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 text-sm focus:ring-0 focus:outline-none border-0"
+              className="w-full px-4 py-2.5 text-sm focus:ring-0 focus:outline-none border-0 bg-transparent placeholder:text-slate-400"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
@@ -296,7 +296,7 @@ useEffect(()=>{
             />
           </div>
           <button 
-            className="px-3 py-2 text-violet-600 hover:bg-violet-50 transition-colors text-sm font-medium border-l border-gray-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2.5 text-violet-600 hover:bg-violet-50 hover:text-violet-700 transition-colors text-sm font-semibold border-l border-slate-200/60 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleUiCategory}
             disabled={!category.trim() || categories.includes(category.trim())}
             title={
@@ -327,100 +327,102 @@ useEffect(()=>{
 
         <button
           onClick={() => setShowTaskModal(true)}
-          className="bg-violet-600 text-white px-4 py-2 rounded-lg font-semibold shadow-sm hover:bg-violet-500 transition flex items-center gap-2"
+          className="bg-linear-to-r from-violet-600 to-fuchsia-600 text-white px-5 py-2.5 rounded-xl font-bold shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
           </svg>
           Add Task
         </button>
-        <DateTime className="font-bold hidden md:block" />
+        {/* Removed DateTime as it doesn't fit the new inline header well, keeping it clean */}
       </div>
     </header>
 
     {/* Category Tabs */}
-    <div className="flex items-center gap-6 mt-8 overflow-x-auto scrollbar-hide pl-1">
+    <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide py-2 px-1">
       {categories.map((each) => (
         <button
           key={each}
           onClick={() => handleGetTasks(each)}
-          className="relative pb-1 cursor-pointer"
+          className={`relative px-5 py-2.5 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
+            active === each
+              ? "bg-slate-800 text-white shadow-lg shadow-slate-800/20 scale-105"
+              : "bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-800 border border-slate-200/50 hover:scale-105"
+          }`}
         >
-          <span
-            className={
-              active === each
-                ? "text-black font-semibold"
-                : "text-gray-500 hover:text-gray-700"
-            }
-          >
-            {each}
-          </span>
-
-          {/* Animated underline */}
-          <span
-            className={`absolute rounded-4xl left-0 bottom-0 h-0.5 
-              bg-linear-to-r from-cyan-400 via-blue-500 to-indigo-600 
-              transition-all duration-300 
-              ${active === each ? "w-full" : "w-0"}`}
-          />
+          {each}
         </button>
       ))}
     </div>
   
         {/* 🟣 Modal for Adding Task */}
   {showTaskModal && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-2xl shadow-lg w-100 relative">
+  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="bg-white/90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-md border border-white/50 relative transform transition-all">
       {/* Close button */}
       <button
         onClick={() => setShowTaskModal(false)}
-        className="absolute top-3 right-3 text-gray-500 hover:text-black"
+        className="absolute top-4 right-4 p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800 rounded-full transition-colors"
       >
         <X size={20} />
       </button>
 
-      <h2 className="text-xl font-bold mb-4">Add New Task</h2>
+      <h2 className="text-2xl font-extrabold mb-6 bg-clip-text text-transparent bg-linear-to-r from-violet-600 to-fuchsia-600">New Task</h2>
 
       {/* Task name input */}
-      <input
-        type="text"
-        placeholder="Enter task name..."
-        value={newTask}
-        onChange={(e) => setNewTask(e.target.value)}
-        className="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-violet-500"
-      />
+      <div className="space-y-5">
+        <div>
+          <label className="block text-sm font-bold text-slate-700 mb-2">What needs to be done?</label>
+          <input
+            type="text"
+            placeholder="e.g. Finish the presentation"
+            value={newTask}
+            onChange={(e) => setNewTask(e.target.value)}
+            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all font-medium"
+            autoFocus
+          />
+        </div>
 
-      {/* Category selector */}
-      <label className="block text-sm font-medium mb-2">Choose Category</label>
-      <select
-        value={taskCategory}
-        onChange={(e) => setTaskCategory(e.target.value)}
-        className="w-full p-3 border rounded-lg mb-4 bg-white focus:outline-none focus:ring-2 focus:ring-violet-500"
-      >
-        {categories.map((cat) => (
-          <option key={cat} value={cat}>
-            {cat}
-          </option>
-        ))}
-      </select>
+        {/* Category selector */}
+        <div>
+          <label className="block text-sm font-bold text-slate-700 mb-2">Category</label>
+          <select
+            value={taskCategory}
+            onChange={(e) => setTaskCategory(e.target.value)}
+            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all font-medium"
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      {/* Save button */}
-      <button
-        onClick={handleAddTask}
-        className="w-full bg-violet-600 text-white py-2 rounded-lg font-semibold hover:bg-violet-500"
-      >
-        Save Task
-      </button>
+        {/* Save button */}
+        <button
+          onClick={handleAddTask}
+          className="w-full bg-linear-to-r from-violet-600 to-fuchsia-600 text-white py-4 rounded-xl font-bold shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all mt-2"
+        >
+          Create Task
+        </button>
+      </div>
     </div>
   </div>
 )}
 
   {/* Task List by Active Category */}
-<div className="mt-8 space-y-3">
+<div className="mt-8 space-y-3 pb-24">
   {goals.length === 0 ? (
-    <div className="text-center text-gray-500 py-12">
-      <p className="text-lg font-semibold">No tasks in “{active}” yet</p>
-      <p className="text-sm">Click <span className="text-violet-600 font-semibold">+ Add Task</span> to create one</p>
+    <div className="text-center bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-3xl py-16 px-6 shadow-sm">
+      <div className="bg-violet-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg className="w-10 h-10 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      </div>
+      <p className="text-xl font-bold text-slate-800 mb-2">No tasks in "{active}"</p>
+      <p className="text-slate-500 mb-6">You're all caught up! Time to relax or start something new.</p>
+      <button onClick={() => setShowTaskModal(true)} className="text-violet-600 font-bold hover:text-violet-700 hover:underline">
+        + Add your first task here
+      </button>
     </div>
   ) : (
     goals
@@ -428,9 +430,14 @@ useEffect(()=>{
       
         <div
           key={task.id}
-          className="flex items-center justify-between p-3 border rounded-xl shadow-sm hover:shadow-md transition bg-white"
+          className={`group flex items-center justify-between p-4 pl-5 rounded-2xl shadow-xs border transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${
+            goalsCompleted.some(c => String(c.goalId) === task.id && c.isCompleted) 
+              ? "bg-slate-50 border-slate-200 opacity-75" 
+              : "bg-white border-white hover:border-violet-100"
+          }`}
         >
           <FormControlLabel
+            className="flex-1 m-0"
             control={
               <Checkbox
                 checked={goalsCompleted.some((c)=>(
@@ -438,41 +445,44 @@ useEffect(()=>{
                 ))}
                 onChange={(e,checked)=>handleCheckbox(checked,task.id)}
                 sx={{
-                  color: green[800],
-                  "&.Mui-checked": { color: green[600] },
+                  color: '#cbd5e1',
+                  '& .MuiSvgIcon-root': { fontSize: 28 },
+                  '&.Mui-checked': { color: '#8b5cf6' },
                 }}
               />
             }
             label={
-              <div className="flex items-center gap-2">
-                <span className={goalsCompleted.some(c => String(c.goalId) === task.id && c.isCompleted) ? "text-gray-500 line-through" : "text-gray-900 font-medium"}>
-                  {task.title}
-                </span>
-              </div>
+              <span className={`text-lg transition-all duration-300 ml-2 ${
+                goalsCompleted.some(c => String(c.goalId) === task.id && c.isCompleted) 
+                  ? "text-slate-400 line-through decoration-slate-300 decoration-2" 
+                  : "text-slate-800 font-bold"
+              }`}>
+                {task.title}
+              </span>
             }
           />
           {/* Dropdown Menu */}
-          <div className="relative" ref={openMenuId === task.id ? menuRef : null}>
+          <div className="relative opacity-0 group-hover:opacity-100 transition-opacity duration-200" ref={openMenuId === task.id ? menuRef : null}>
             <button
               onClick={() => setOpenMenuId(openMenuId === task.id ? null : task.id)}
-              className="p-1 hover:bg-gray-100 rounded-full transition"
+              className="p-2 hover:bg-slate-100 rounded-xl transition cursor-pointer"
             >
-              <MoreHorizontal className="text-gray-400 cursor-pointer" />
+              <MoreHorizontal className="text-slate-400" />
             </button>
             
             {/* Dropdown Options */}
             {openMenuId === task.id && (
-              <div className="absolute right-0 top-8 bg-white border rounded-lg shadow-lg py-1 z-10 min-w-30">
+              <div className="absolute right-0 top-12 bg-white border border-slate-100 rounded-xl shadow-xl py-2 z-10 w-40 transform origin-top-right transition-all">
                 <button
                   onClick={() => handleEditClick(task)}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                  className="w-full px-4 py-2 text-left text-sm font-semibold hover:bg-slate-50 flex items-center gap-3 text-slate-700 transition"
                 >
-                  <Pencil size={16} />
+                  <Pencil size={16} className="text-violet-500" />
                   Rename
                 </button>
                 <button
                   onClick={() => handleDeleteClick(task)}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600"
+                  className="w-full px-4 py-2 text-left text-sm font-semibold hover:bg-red-50 flex items-center gap-3 text-red-600 transition"
                 >
                   <Trash2 size={16} />
                   Delete
@@ -487,27 +497,27 @@ useEffect(()=>{
 
 {/* Edit Task Modal */}
 {showEditModal && editingTask && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-2xl shadow-lg w-96 relative">
+  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="bg-white/90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-md border border-white/50 relative transform transition-all">
       <button
         onClick={() => {
           setShowEditModal(false);
           setEditingTask(null);
           setEditTaskTitle("");
         }}
-        className="absolute top-3 right-3 text-gray-500 hover:text-black"
+        className="absolute top-4 right-4 p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-800 rounded-full transition-colors"
       >
         <X size={20} />
       </button>
 
-      <h2 className="text-xl font-bold mb-4">Rename Task</h2>
+      <h2 className="text-2xl font-extrabold mb-6 text-slate-800">Rename Task</h2>
 
       <input
         type="text"
         placeholder="Enter new task name..."
         value={editTaskTitle}
         onChange={(e) => setEditTaskTitle(e.target.value)}
-        className="w-full p-3 border rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-violet-500"
+        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all font-medium mb-6"
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
@@ -517,23 +527,23 @@ useEffect(()=>{
         autoFocus
       />
 
-      <div className="flex gap-3">
+      <div className="flex gap-4">
         <button
           onClick={() => {
             setShowEditModal(false);
             setEditingTask(null);
             setEditTaskTitle("");
           }}
-          className="flex-1 py-2 border rounded-lg font-semibold hover:bg-gray-50 transition"
+          className="flex-1 py-3 bg-slate-100 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition"
         >
           Cancel
         </button>
         <button
           onClick={handleRenameTask}
           disabled={!editTaskTitle.trim() || editTaskTitle.trim() === editingTask.title || isEditing}
-          className="flex-1 bg-violet-600 text-white py-2 rounded-lg font-semibold hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          className="flex-1 bg-violet-600 text-white py-3 rounded-xl font-bold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-md"
         >
-          {isEditing ? "Saving..." : "Save"}
+          {isEditing ? "Saving..." : "Save Changes"}
         </button>
       </div>
     </div>
@@ -542,39 +552,33 @@ useEffect(()=>{
 
 {/* Delete Confirmation Modal */}
 {showDeleteModal && editingTask && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-2xl shadow-lg w-96 relative">
-      <button
-        onClick={() => {
-          setShowDeleteModal(false);
-          setEditingTask(null);
-        }}
-        className="absolute top-3 right-3 text-gray-500 hover:text-black"
-      >
-        <X size={20} />
-      </button>
-
-      <h2 className="text-xl font-bold mb-2">Delete Task</h2>
-      <p className="text-gray-600 mb-6">
-        Are you sure you want to delete &quot;{editingTask.title}&quot;? This action cannot be undone.
+  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="bg-white/90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-sm border border-white/50 relative text-center">
+      <div className="mx-auto bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+        <Trash2 className="text-red-500" size={28} />
+      </div>
+      
+      <h2 className="text-2xl font-extrabold mb-2 text-slate-800">Delete Task?</h2>
+      <p className="text-slate-500 mb-8 font-medium">
+        Are you sure you want to delete <br/><span className="text-slate-800 font-bold">"{editingTask.title}"</span>? <br/>This action cannot be undone.
       </p>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3">
+        <button
+          onClick={handleDeleteTask}
+          disabled={isDeleting}
+          className="w-full bg-red-600 text-white py-3.5 rounded-xl font-bold hover:bg-red-700 disabled:opacity-50 transition shadow-md hover:shadow-lg"
+        >
+          {isDeleting ? "Deleting..." : "Yes, delete task"}
+        </button>
         <button
           onClick={() => {
             setShowDeleteModal(false);
             setEditingTask(null);
           }}
-          className="flex-1 py-2 border rounded-lg font-semibold hover:bg-gray-50 transition"
+          className="w-full py-3.5 bg-slate-100/50 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition"
         >
-          Cancel
-        </button>
-        <button
-          onClick={handleDeleteTask}
-          disabled={isDeleting}
-          className="flex-1 bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition"
-        >
-          {isDeleting ? "Deleting..." : "Delete"}
+          Hold on, keep it
         </button>
       </div>
     </div>

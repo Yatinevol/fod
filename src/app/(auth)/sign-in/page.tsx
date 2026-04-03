@@ -53,7 +53,7 @@ const SignIn = () => {
             render={({field})=>(
               <FormItem>
                 <FormLabel className="text-sm font-medium text-white/90">Email/Username</FormLabel>
-                <input className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200" placeholder='Username or email address'  {...field}/>
+                <input className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all duration-200" placeholder='Username or email address'  {...field}/>
               </FormItem>
             )}
           />
@@ -63,14 +63,14 @@ const SignIn = () => {
             render={({field})=>(
               <FormItem>
                 <FormLabel className="text-sm font-medium text-white/90">Password</FormLabel>
-                <input type='password' className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all duration-200" placeholder='Password' {...field}/>
+                <input type='password' className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-transparent transition-all duration-200" placeholder='Password' {...field}/>
               </FormItem>
             )}
           />
           <Button
                 
                 type="submit"
-                className="w-full py-3 bg-linear-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-transparent disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full py-3 bg-linear-to-r from-slate-500 to-blue-600 hover:from-slate-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-transparent disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 Sign in
               </Button>

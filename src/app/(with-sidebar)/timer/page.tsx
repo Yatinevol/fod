@@ -471,358 +471,341 @@
                 handleGetSessionParticipants()
             }
         },[sessionId, isSessionActive, handleGetSessionParticipants])
+        
+        // Compute circular progress for the timer
+        const totalInitialSecs = workHr * 3600 + workMin * 60 + workSec || 1;
+        const totalCurrentSecs = totalSecsRef.current || totalInitialSecs;
+        const progressPercentage = isPlaying ? ((initialTimeRef.current - totalCurrentSecs) / initialTimeRef.current) * 100 : 0;
+        const radius = 80;
+        const circumference = 2 * Math.PI * radius;
+        const strokeDashoffset = isPlaying ? circumference - (progressPercentage / 100) * circumference : 0;
+
     return (
-        <div className="space-y-8">
-            <div className='flex justify-between border-b-2 border-gray-300 pb-2 mb-4'>
-                <h1>Timer</h1>
-                <DateTime  className="font-bold hidden md:block"/>
+        <div className="flex flex-col space-y-10 p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col space-y-3 bg-white/60 backdrop-blur-xl border border-slate-200/60 p-8 rounded-3xl shadow-xl shadow-slate-200/50">
+                <div className='flex justify-between items-center'>
+                    <div>
+                        <h1 className="text-4xl font-black bg-linear-to-br from-slate-900 via-slate-700 to-slate-600 bg-clip-text text-transparent transform transition-all hover:scale-[1.01]">Focus Timer</h1>
+                        <p className="text-slate-500 font-medium text-lg mt-2">Maximize your productivity and achieve your goals.</p>
+                    </div>
+                    <DateTime className="font-bold hidden md:block text-slate-600 bg-white/50 px-4 py-2 rounded-xl shadow-sm border border-slate-200/50"/>
+                </div>
             </div>
 
-            <div className='flex gap-6'>
-                {/* set goal div: */}
-                <div className='bg-white rounded-lg border border-gray-200 p-6 flex-1'>
-                    <div className='flex justify-between items-center mb-6'>
-                        <h1 className='text-lg font-semibold'>Goal Setting</h1>
-                        <div className='bg-gray-100 rounded-lg p-1'>
-                            <button onClick={() => setTodayTrue(true)}
-                            className={`px-4 py-2 rounded-md transition-colors cursor-pointer text-sm ${todayTrue ? 'bg-purple-600 text-white shadow-sm font-medium':'text-gray-600 hover:text-gray-800'}`}>Today</button>
-                            <button onClick={()=> setTodayTrue(false)}
-                            className={`px-4 py-2 rounded-md transition-colors cursor-pointer text-sm ${
-                                    !todayTrue 
-                                        ? 'bg-purple-600 text-white shadow-sm font-medium' 
-                                        : 'text-gray-600 hover:text-gray-800'
-                                }`}>Week</button>
-                        </div>
-                    </div>
-                    {!isSet ?(
-                        <>
-                            <div className='flex items-center space-x-4 mb-4'>
-                                <h3 className='text-gray-700 font-medium'>
-                                    Set Goal:
-                                </h3>
-                                <input 
-                                    className='w-16 px-3 py-2 border border-gray-300 rounded-md text-center font-semibold' 
-                                    type="number" 
-                                    id='hours' 
-                                    value={todayTrue ? goalTHr : goalWeekHr} 
-                                    onChange={(e)=> todayTrue ? setGoalTHr(Number(e.target.value)) : setGoalWeekHr(Number(e.target.value))} 
-                                    min="0"
-                                />
-                                <span className='text-gray-700'>hours</span>
-                            </div>
-                            <div className='flex space-x-2 mb-6'>
-                                <button className='px-4 py-2 cursor-pointer bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium transition-colors'
-                                onClick={()=> todayTrue ? setGoalTHr((prev)=> prev + 4) : setGoalWeekHr((prev)=> prev + 4)}>+4h</button>
-                                <button className='px-4 py-2 cursor-pointer bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium transition-colors'
-                                onClick={()=> todayTrue ? setGoalTHr((prev)=> prev + 6) : setGoalWeekHr((prev)=> prev + 6)}>+6h</button>
-                                <button className='px-4 py-2 cursor-pointer bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium transition-colors'
-                                onClick={()=> todayTrue ? setGoalTHr((prev)=> prev + 8) : setGoalWeekHr((prev)=> prev + 8)}>+8h</button>
-                            </div>
-                        </>
-                    ):(
-                        <div className='mb-6 p-4 bg-green-50 rounded-lg border border-green-200'>
-                            <div className='flex justify-between items-center'>
-                                <span className='text-green-700 font-medium'>
-                                    Goal Set: {currentLockedGoal} hours ({todayTrue ? 'Today' : 'This Week'})
-                                </span>
-                                <button 
-                                    onClick={handleEditGoal}
-                                    className='p-1 text-gray-600 hover:text-gray-800 transition-colors'
-                                    title="Edit goal"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
+            <div className='grid grid-cols-1 lg:grid-cols-5 gap-8'>
+                {/* goal setting div: */}
+                <div className='lg:col-span-2 space-y-6'>
+                    <div className='bg-white/60 backdrop-blur-xl rounded-3xl border border-slate-200/60 p-8 shadow-lg shadow-slate-200/50 hover:shadow-xl transition-all duration-300'>
+                        <div className='flex justify-between items-center mb-8 pb-4 border-b border-slate-200/80'>
+                            <h2 className='text-2xl font-bold flex items-center text-slate-800'>
+                                <svg className="w-6 h-6 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                Goal Setting
+                            </h2>
+                            <div className='bg-slate-100/80 rounded-xl p-1 shadow-inner'>
+                                <button onClick={() => setTodayTrue(true)}
+                                className={`px-5 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm ${todayTrue ? 'bg-white text-blue-600 shadow-sm font-bold border border-slate-200/50':'text-slate-500 hover:text-slate-700 font-medium'}`}>Today</button>
+                                <button onClick={()=> setTodayTrue(false)}
+                                className={`px-5 py-2 rounded-lg transition-all duration-200 cursor-pointer text-sm ${!todayTrue ? 'bg-white text-blue-600 shadow-sm font-bold border border-slate-200/50' : 'text-slate-500 hover:text-slate-700 font-medium'}`}>Week</button>
                             </div>
                         </div>
-                    )}
-    
-                    <div>
-                        <div className='flex justify-between items-center mb-3'>
-                            <h4 className='text-gray-700 font-medium'>Progress for {todayTrue ? "Today's" : "This Week's"} Goal</h4>
-                            <div className='text-sm font-semibold text-gray-600'>
-                                {/* {Math.round(focusedMinutes/60 * 10) / 10} */}
-                                {Math.floor(focusedMinutes/60)} h {focusedMinutes % 60} m / {isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)} hours
-                            </div>
-                        </div>
-                        
-                        {/* Progress Bar */}
-                        <div className='w-full bg-gray-200 rounded-full h-2 mb-4'>
-                            <div 
-                                className='bg-purple-500 h-2 rounded-full transition-all duration-300 ease-out'
-                                style={{ 
-                                    width: `${(isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)) > 0 ? Math.min((focusedMinutes/60 / (isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr))) * 100, 100) : 0}%` 
-                                }}
-                            />
-                        </div>
-                    </div>
 
-                    {/* Centered Set button - only show when goal is not set */}
-                    {!isSet && (
-                        <div className='flex flex-col items-center space-y-4'>
-                            <button 
-                                onClick={(handleSetGoal)}
-                                disabled={(todayTrue ? goalTHr : goalWeekHr) === 0}
-                                className={`px-6 py-2 rounded-md text-sm font-medium transition ${
-                                    (todayTrue ? goalTHr : goalWeekHr) > 0 
-                                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                                        : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                }`}
-                            >
-                                Set Goal
-                            </button>
-
-                            {/* Join Session Section */}
-                            {!isSessionActive && (
-                                <div className='w-full'>
-                                    <div className='flex items-center mb-3'>
-                                        <div className='flex-1 h-px bg-gray-300'></div>
-                                        <span className='px-3 text-sm text-gray-500'>or</span>
-                                        <div className='flex-1 h-px bg-gray-300'></div>
+                        {!isSet ?(
+                            <div className="space-y-6 animate-in fade-in duration-300">
+                                <div className='flex items-center justify-center space-x-4 bg-slate-50/50 p-6 rounded-2xl border border-slate-200/60'>
+                                    <h3 className='text-slate-600 font-semibold tracking-wide'>TARGET:</h3>
+                                    <input 
+                                        className='w-20 px-3 py-2 bg-white border-2 border-transparent focus:border-blue-300 shadow-sm rounded-xl text-center text-2xl font-black text-slate-800 focus:outline-none transition-all' 
+                                        type="number" 
+                                        id='hours' 
+                                        value={todayTrue ? goalTHr : goalWeekHr} 
+                                        onChange={(e)=> todayTrue ? setGoalTHr(Number(e.target.value)) : setGoalWeekHr(Number(e.target.value))} 
+                                        min="0"
+                                    />
+                                    <span className='text-slate-500 font-bold'>HOURS</span>
+                                </div>
+                                <div className='grid grid-cols-3 gap-3'>
+                                    {[4, 6, 8].map(h => (
+                                        <button key={h} className='py-3 cursor-pointer bg-white border border-slate-200/60 hover:border-blue-300 hover:bg-blue-50 text-slate-600 hover:text-blue-600 rounded-xl text-sm font-bold transition-all shadow-sm active:scale-95'
+                                            onClick={()=> todayTrue ? setGoalTHr((prev)=> prev + h) : setGoalWeekHr((prev)=> prev + h)}>+{h}h</button>
+                                    ))}
+                                </div>
+                            </div>
+                        ):(
+                            <div className='mb-8 p-5 bg-linear-to-br from-emerald-50 to-teal-50 rounded-2xl border border-teal-200/50 shadow-inner group transition-all relative overflow-hidden'>
+                                <div className="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-teal-500/10 rounded-full blur-2xl"></div>
+                                <div className='flex justify-between items-center relative z-10'>
+                                    <div>
+                                        <p className="text-xs font-bold text-teal-600/70 tracking-wider mb-1 uppercase">Active Goal • {todayTrue ? 'Today' : 'This Week'}</p>
+                                        <span className='text-teal-900 font-black text-3xl'>{currentLockedGoal} <span className="text-xl text-teal-700/80">hrs</span></span>
                                     </div>
-                                    
-                                    <div className='space-y-3'>
-                                        <h3 className='text-sm font-medium text-gray-700 text-center'>Join an Existing Session</h3>
-                                        <div className='flex space-x-2'>
+                                    <button onClick={handleEditGoal} className='p-3 bg-white/60 hover:bg-white text-teal-600 rounded-xl shadow-sm transition-all hover:scale-105' title="Edit goal">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+        
+                        <div className="mt-8 bg-slate-50/50 p-6 rounded-2xl border border-slate-200/60">
+                            <div className='flex justify-between items-end mb-4'>
+                                <div>
+                                    <h4 className='text-slate-500 font-bold uppercase tracking-wider text-xs mb-1'>Progress</h4>
+                                    <div className='text-2xl font-black text-slate-800'>
+                                        {Math.floor(focusedMinutes/60)}<span className="text-sm text-slate-500 font-bold ml-1 mr-2">h</span>
+                                        {focusedMinutes % 60}<span className="text-sm text-slate-500 font-bold ml-1">m</span>
+                                    </div>
+                                </div>
+                                <div className='text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg border border-blue-100'>
+                                    {isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)} Hrs Total
+                                </div>
+                            </div>
+                            
+                            {/* Progress Bar */}
+                            <div className='w-full bg-slate-200/80 rounded-full h-3 mb-2 overflow-hidden shadow-inner'>
+                                <div 
+                                    className='bg-linear-to-r from-blue-500 to-sky-400 h-full rounded-full transition-all duration-700 ease-out shadow-sm'
+                                    style={{ 
+                                        width: `${(isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr)) > 0 ? Math.min((focusedMinutes/60 / (isSet ? currentLockedGoal : (todayTrue ? goalTHr : goalWeekHr))) * 100, 100) : 0}%` 
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Centered Set button - only show when goal is not set */}
+                        {!isSet && (
+                            <div className='flex flex-col space-y-6 mt-8'>
+                                <button 
+                                    onClick={(handleSetGoal)}
+                                    disabled={(todayTrue ? goalTHr : goalWeekHr) === 0}
+                                    className={`w-full py-4 rounded-xl text-base font-bold shadow-md transition-all active:scale-[0.98] ${
+                                        (todayTrue ? goalTHr : goalWeekHr) > 0 
+                                            ? 'bg-linear-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 hover:shadow-blue-500/20' 
+                                            : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                    }`}
+                                >
+                                    LOCK IN GOAL
+                                </button>
+
+                                {/* Join Session Section */}
+                                {!isSessionActive && (
+                                    <div className='w-full pt-4'>
+                                        <div className='flex items-center mb-6'>
+                                            <div className='flex-1 h-px bg-slate-200'></div>
+                                            <span className='px-4 text-xs font-bold text-slate-400 uppercase tracking-widest'>or join session</span>
+                                            <div className='flex-1 h-px bg-slate-200'></div>
+                                        </div>
+                                        
+                                        <div className='flex space-x-3'>
                                             <input
                                                 type="text"
-                                                placeholder="Enter Session ID"
+                                                placeholder="Paste Session ID..."
                                                 value={joinSessionLink}
                                                 onChange={(e) => setJoinSessionLink(e.target.value)}
-                                                className='flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent'
+                                                className='flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 font-medium transition-all text-slate-700 placeholder:text-slate-400'
                                                 disabled={isJoinSession}
                                             />
                                             <button
                                                 onClick={handleSessionJoin}
                                                 disabled={!joinSessionLink.trimEnd()|| isJoinSession}
-                                                className={`px-4 py-2 rounded-md text-sm font-medium transition ${
+                                                className={`px-6 py-3 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95 ${
                                                     isJoinSession || !joinSessionLink.trim()
-                                                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                                        : 'bg-green-600 text-white hover:bg-green-700'
+                                                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                        : 'bg-slate-800 text-white hover:bg-slate-900 hover:shadow-slate-800/20'
                                                 }`}
                                             >
-                                                {isJoinSession ? 'Joining...' : 'Join'}
+                                                {isJoinSession ? '...' : 'JOIN'}
                                             </button>
                                         </div>
                                     </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                                )}
+                            </div>
+                        )}
 
-                    {/* SESSION CONTROLS - NEW */}
-                    {/* Share as Session button - only show for weekly goals that are set */}
-                    {isSet && !todayTrue && !isSessionActive && (
-                        <div className='flex justify-center mt-4'>
-                            <button 
-                                onClick={handleCreateSession}
-                                disabled={isCreating}
-                                className={`px-4 py-2 rounded-md transition-colors ${
-                                    isCreating
-                                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                        : 'bg-green-600 text-white hover:bg-green-700'
-                                }`}
-                            >
-                                {isCreating ? 'Creating...' : 'Share Weekly Goal as Session'}
-                            </button>
-                        </div>
-                    )}
+                        {/* SESSION CONTROLS - NEW */}
+                        {isSet && !todayTrue && !isSessionActive && (
+                            <div className='flex justify-center mt-6 pt-6 border-t border-slate-200/80'>
+                                <button 
+                                    onClick={handleCreateSession}
+                                    disabled={isCreating}
+                                    className={`w-full py-4 rounded-xl font-bold shadow-md transition-all active:scale-[0.98] ${
+                                        isCreating
+                                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                            : 'bg-linear-to-r from-emerald-500 to-teal-500 text-white hover:from-emerald-600 hover:to-teal-600 hover:shadow-emerald-500/20'
+                                    }`}
+                                >
+                                    {isCreating ? 'CREATING SESSION...' : 'SHARE AS GROUP SESSION'}
+                                </button>
+                            </div>
+                        )}
 
-                    {/* Session active status - show when session is running */}
-                    {isSessionActive && (
-                        <div className='mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200'>
-                            <div className='flex justify-between items-center mb-2'>
-                                <div className='flex items-center space-x-2'>
-                                    <div className='w-2 h-2 bg-green-500 rounded-full'></div>
-                                    <span className='text-blue-700 font-medium'>
-                                        {forHost ? 'Hosting Session' : 'Joined Session'}
-                                    </span>
+                        {isSessionActive && (
+                            <div className='mt-8 p-5 bg-linear-to-br from-blue-50 to-sky-50 rounded-2xl border border-blue-200/50 relative overflow-hidden group shadow-inner'>
+                                <div className="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+                                <div className='flex justify-between items-center mb-4 relative z-10'>
+                                    <div className='flex items-center space-x-3'>
+                                        <span className="relative flex h-3 w-3">
+                                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                          <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                                        </span>
+                                        <span className='text-blue-900 font-bold tracking-tight'>
+                                            {forHost ? 'HOSTING SESSION' : 'JOINED SESSION'}
+                                        </span>
+                                    </div>
+                                    
+                                    <div className='flex items-center space-x-3'>
+                                        <div className='flex items-center bg-white/60 px-3 py-1 rounded-lg border border-blue-100 shadow-sm'>
+                                            <svg className="w-4 h-4 mr-1.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                            <span className='text-sm font-bold text-blue-800'>{participants.length}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className='flex items-center space-x-2'>
-                                    <span className='text-sm text-gray-600'>{participants.length} participants</span>
-                                    {/* Only show End Session for host */}
-                                    {forHost && (
-                                        <button 
-                                            onClick={handleEndSession}
-                                            className='text-red-600 hover:text-red-800 text-sm font-medium'
-                                        >
-                                            End Session
-                                        </button>
+
+                                <div className="space-y-3 relative z-10">
+                                    {forHost && sessionLink && (
+                                        <div className='flex items-center space-x-2 bg-white/80 p-1.5 rounded-xl border border-blue-100/60 shadow-sm'>
+                                            <input type="text" value={sessionLink} readOnly className='flex-1 px-3 py-2 text-xs bg-transparent text-slate-600 font-medium focus:outline-none' />
+                                            <button onClick={handleCopyLink} className='px-4 py-2 bg-slate-800 text-white text-xs font-bold rounded-lg hover:bg-slate-900 transition-colors shadow-sm'>
+                                                COPY
+                                            </button>
+                                        </div>
                                     )}
-                                    {/* Show Leave Session for participants */}
-                                    {!forHost && (
-                                        <button 
-                                            onClick={handleLeaveSession}
-                                            className='text-orange-600 hover:text-orange-800 text-sm font-medium'
-                                        >
-                                            Leave Session
-                                        </button>
-                                    )}
+
+                                    <div className="flex justify-end pt-2">
+                                        {forHost ? (
+                                            <button onClick={handleEndSession} className='text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg text-xs font-bold transition-all border border-red-100'>END SESSION</button>
+                                        ) : (
+                                            <button onClick={handleLeaveSession} className='text-orange-500 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 px-4 py-2 rounded-lg text-xs font-bold transition-all border border-orange-100'>LEAVE SESSION</button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                            {/* Only show session link for host */}
-                            {forHost && sessionLink && (
-                                <div className='flex items-center space-x-2'>
-                                    <input 
-                                        type="text" 
-                                        value={sessionLink} 
-                                        readOnly 
-                                        className='flex-1 px-2 py-1 text-xs bg-white border border-blue-300 rounded'
-                                    />
-                                    <button 
-                                        onClick={handleCopyLink}
-                                        className='px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors'
-                                    >
-                                        Copy Link
-                                    </button>
-                                </div>
-                            )}
-                            {/* For participants, show simpler info */}
-                            {!forHost && (
-                                <div className='text-xs text-gray-600 text-center'>
-                                    You&apos;re participating in this weekly goal session
-                                </div>
-                            )}
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
 
                 {/* timer div: */}
-                <div className='bg-white rounded-lg border border-gray-200 p-6 flex-1 max-w-md relative'>
-                    <div className='flex justify-between items-center mb-8'>
-                        <h1 className='text-lg font-semibold'>Pomodoro Timer</h1>
-                        <button className='p-2 text-gray-600 hover:text-gray-800 transition-colors rounded-md hover:bg-gray-100' onClick={handleEditTimer}>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    {/* Settings Container */}
-                    {isEditingTimer && (
-                        <div className='absolute top-18 left-6 right-6 bottom-6 bg-white rounded-lg z-10 p-0 flex flex-col'>
-                            <div className='flex justify-between items-center mb-6'>
-                                <h2 className='text-lg font-semibold'>Timer Settings</h2>
-                                <button onClick={handleEditTimer} className='p-2 text-gray-600 hover:text-gray-800 transition-colors rounded-md hover:bg-gray-100'>
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-                            
-                            <div className='flex-1 flex flex-col justify-center space-y-8'>
-                                <div className='flex justify-between items-center'>
-                                    <label className='text-gray-700 font-medium'>Work Time</label>
-                                    <div className='flex items-center space-x-2'>
-                                        <input 
-                                            type="number" 
-                                            value={workHr} 
-                                            onChange={(e) => setWorkHr(Number(e.target.value))}
-                                            className='w-12 px-2 py-2 border border-gray-300 rounded-md text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-                                            min="0"
-                                            max="23"
-                                        />
-                                        <span className='text-gray-600 text-sm'>h</span>
-                                        <input 
-                                            type="number" 
-                                            value={workMin} 
-                                            onChange={(e) => setWorkMin(Number(e.target.value))}
-                                            className='w-12 px-2 py-2 border border-gray-300 rounded-md text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-                                            min="0"
-                                            max="59"
-                                        />
-                                        <span className='text-gray-600 text-sm'>m</span>
-                                        <input 
-                                            type="number" 
-                                            value={workSec} 
-                                            onChange={(e) => setWorkSec(Number(e.target.value))}
-                                            className='w-12 px-2 py-2 border border-gray-300 rounded-md text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-                                            min="0"
-                                            max="59"
-                                        />
-                                        <span className='text-gray-600 text-sm'>s</span>
+                <div className='lg:col-span-3'>
+                    <div className='bg-white/60 backdrop-blur-xl rounded-3xl border border-slate-200/60 p-8 shadow-lg shadow-slate-200/50 flex flex-col items-center justify-center min-h-150 relative overflow-hidden group'>
+                        <div className="absolute inset-0 bg-linear-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+                        
+                        <div className='absolute top-8 right-8 z-20'>
+                            <button className='p-3 text-slate-400 hover:text-blue-600 transition-all rounded-xl hover:bg-blue-50 shadow-sm bg-white border border-slate-100' onClick={handleEditTimer}>
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        {/* Settings Overlay */}
+                        {isEditingTimer && (
+                            <div className='absolute inset-0 bg-white/95 backdrop-blur-xl z-30 p-10 flex flex-col justify-center animate-in fade-in zoom-in-95 duration-200'>
+                                <h2 className='text-3xl font-black text-slate-800 mb-10 text-center tracking-tight'>Timer Settings</h2>
+                                
+                                <div className='max-w-md mx-auto w-full space-y-8'>
+                                    <div className='bg-slate-50 p-6 rounded-2xl border border-slate-200'>
+                                        <label className='block text-slate-500 font-bold text-xs uppercase tracking-widest mb-4'>Session Duration</label>
+                                        <div className='flex items-center justify-center space-x-4'>
+                                            <div className="flex flex-col items-center">
+                                                <input type="number" value={workHr} onChange={(e) => setWorkHr(Number(e.target.value))} className='w-16 h-16 text-2xl font-black bg-white border-2 border-transparent focus:border-blue-400 rounded-xl text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shadow-sm transition-all' min="0" max="23" />
+                                                <span className='text-slate-400 text-xs font-bold mt-2'>HRS</span>
+                                            </div>
+                                            <span className='text-2xl font-bold text-slate-300 -mt-6'>:</span>
+                                            <div className="flex flex-col items-center">
+                                                <input type="number" value={workMin} onChange={(e) => setWorkMin(Number(e.target.value))} className='w-16 h-16 text-2xl font-black bg-white border-2 border-transparent focus:border-blue-400 rounded-xl text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shadow-sm transition-all' min="0" max="59" />
+                                                <span className='text-slate-400 text-xs font-bold mt-2'>MIN</span>
+                                            </div>
+                                            <span className='text-2xl font-bold text-slate-300 -mt-6'>:</span>
+                                            <div className="flex flex-col items-center">
+                                                <input type="number" value={workSec} onChange={(e) => setWorkSec(Number(e.target.value))} className='w-16 h-16 text-2xl font-black bg-white border-2 border-transparent focus:border-blue-400 rounded-xl text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shadow-sm transition-all' min="0" max="59" />
+                                                <span className='text-slate-400 text-xs font-bold mt-2'>SEC</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className='bg-slate-50 p-6 rounded-2xl border border-slate-200'>
+                                        <label className='block text-slate-500 font-bold text-xs uppercase tracking-widest mb-4'>Break Duration</label>
+                                        <div className='flex items-center justify-center'>
+                                            <div className="flex flex-col items-center relative">
+                                                <input type="number" value={breakTime} onChange={(e) => setBreakTime(Number(e.target.value))} className='w-24 h-16 text-2xl font-black bg-white border-2 border-transparent focus:border-emerald-400 rounded-xl text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shadow-sm transition-all' min="1" max="30" />
+                                                <span className='absolute right-4 top-5 text-slate-400 font-bold'>m</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                <div className='flex justify-between items-center'>
-                                    <label className='text-gray-700 font-medium'>Break Time</label>
-                                    <div className='flex items-center space-x-2'>
-                                        <input 
-                                            type="number" 
-                                            value={breakTime} 
-                                            onChange={(e) => setBreakTime(Number(e.target.value))}
-                                            className='w-16 px-3 py-2 border border-gray-300 rounded-md text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
-                                            min="1"
-                                            max="30"
-                                        />
-                                        <span className='text-gray-600'>min</span>
-                                    </div>
+                                <div className='flex justify-center space-x-4 mt-12'>
+                                    <button onClick={handleEditTimer} className='px-8 py-4 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all'>CANCEL</button>
+                                    <button onClick={handleSaveTimerSettings} className='px-10 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-1 hover:shadow-blue-500/40'>SAVE SETTINGS</button>
                                 </div>
                             </div>
-                            
-                            <div className='flex justify-center pt-6'>
-                                <button 
-                                    onClick={handleSaveTimerSettings}
-                                    className='px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors'
-                                >
-                                    Save Settings
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                    
-                    {/* Timer Circle */}
-                    <div className='flex flex-col items-center mb-8'>
-                        <div className='relative w-48 h-48 rounded-full border-4 border-purple-200 flex items-center justify-center mb-4'>
-                            <div className='text-center'>
-                                <div className='text-4xl font-bold text-purple-600 mb-2'>
-                                    <span>{workHr.toString().padStart(2, '0')}</span>
-                                    <span>:</span>
-                                    <span>{workMin.toString().padStart(2, '0')}</span>
-                                    <span>:</span>
-                                    <span>{workSec.toString().padStart(2, '0')}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className='text-gray-600 font-medium mb-6'>Work Session</div>
+                        )}
                         
-                        {/* Control Buttons */}
-                        <div className='flex space-x-3'>
-                                <button 
-                                    onClick={handlePlayTimer}
-                                    className='w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center justify-center transition-colors'
-                                >
-                                    {isPlaying ? (
-                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                                        </svg>
-                                    ) : (
-                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M8 5v14l11-7z"/>
-                                        </svg>
-                                    )}
-                                </button>
-                                <button className='w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center justify-center transition-colors'
-                                onClick={handleResetTimer}
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                    </svg>
-                                </button>
-                                <button className='w-12 h-12 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center justify-center transition-colors' onClick={handleSkipTimer}>
-                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
-                                    </svg>
-                                </button>
+                        {/* Huge Circular Timer */}
+                        <div className={`relative mb-12 flex items-center justify-center transition-all duration-1000 ${isPlaying ? 'scale-105' : 'scale-100'}`}>
+                            {/* Decorative background blurs */}
+                            <div className={`absolute w-[120%] h-[120%] rounded-full bg-linear-to-tr from-blue-400/20 to-sky-300/20 blur-3xl transition-opacity duration-1000 ${isPlaying ? 'opacity-100' : 'opacity-40'}`}></div>
+                            
+                            {/* SVG Timer Ring */}
+                            <svg className="absolute w-full h-full -rotate-90 transform" width="300" height="300" viewBox="0 0 200 200">
+                                <circle 
+                                    cx="100" cy="100" r={radius} 
+                                    className="stroke-slate-100" 
+                                    strokeWidth="8" fill="none" 
+                                />
+                                <circle 
+                                    cx="100" cy="100" r={radius} 
+                                    className={`stroke-blue-500 transition-all duration-1000 ease-linear`}
+                                    strokeWidth="8" fill="none" 
+                                    strokeDasharray={circumference}
+                                    strokeDashoffset={strokeDashoffset}
+                                    strokeLinecap="round"
+                                />
+                            </svg>
+                            
+                            <div className='w-72 h-72 rounded-full bg-white border border-slate-100 shadow-2xl flex flex-col items-center justify-center relative z-10'>
+                                <div className='text-7xl font-black text-slate-800 tracking-tighter flex items-baseline'>
+                                    {workHr > 0 && <>{workHr.toString().padStart(2, '0')}<span className="text-4xl text-slate-300 font-normal mx-1">:</span></>}
+                                    {workMin.toString().padStart(2, '0')}
+                                    <span className="text-4xl text-slate-300 font-normal mx-1">:</span>
+                                    {workSec.toString().padStart(2, '0')}
+                                </div>
+                                <div className='mt-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-600 font-bold text-xs uppercase tracking-widest flex items-center shadow-sm'>
+                                    <span className={`w-2 h-2 rounded-full mr-2 ${isPlaying ? 'bg-blue-500 animate-pulse' : 'bg-slate-300'}`}></span>
+                                    {isPlaying ? 'Focusing' : 'Paused'}
+                                </div>
                             </div>
+                        </div>
+                        
+                        {/* Stylish Control Buttons */}
+                        <div className='flex items-center space-x-6 z-10 bg-slate-50/80 p-3 rounded-3xl border border-slate-200/50 shadow-inner'>
+                            <button onClick={handleResetTimer} className='w-14 h-14 bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 rounded-2xl flex items-center justify-center transition-all shadow-sm border border-slate-200 active:scale-95 group'>
+                                <svg className="w-6 h-6 group-hover:-rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                            </button>
+                            
+                            <button onClick={handlePlayTimer} className={`w-20 h-20 rounded-3xl flex items-center justify-center transition-all duration-300 shadow-xl active:scale-95 ${isPlaying ? 'bg-slate-800 text-white hover:bg-slate-900 shadow-slate-800/30' : 'bg-blue-600 text-white hover:bg-blue-700 hover:-translate-y-1 shadow-blue-500/40'}`}>
+                                {isPlaying ? (
+                                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                ) : (
+                                    <svg className="w-10 h-10 ml-2" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                )}
+                            </button>
+                            
+                            <button onClick={handleSkipTimer} className='w-14 h-14 bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-800 rounded-2xl flex items-center justify-center transition-all shadow-sm border border-slate-200 active:scale-95 group'>
+                                <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Session Component - Pass participants data */}
-            <Session participants={participants} isActive={isSessionActive} />
+            <div className="pt-6 border-t border-slate-200/50">
+                <Session participants={participants} isActive={isSessionActive} />
+            </div>
         </div>
     )
     }
