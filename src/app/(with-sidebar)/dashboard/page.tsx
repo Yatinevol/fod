@@ -219,27 +219,47 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Calendar Section */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-200/60 p-8 flex flex-col items-center col-span-1 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-linear-to-b from-blue-500/5 to-sky-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <h3 className="w-full text-xl font-bold mb-6 text-slate-800 flex items-center relative z-10">
-                  <span className="bg-blue-100 p-2 rounded-xl mr-3 shadow-inner">
-                      <Target className="text-blue-600" size={24} />
-                  </span>
-                  Consistency Tracker
-              </h3>
+          <div className="bg-white/60 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200/60 p-8 flex flex-col items-center col-span-1 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-500 min-h-125">
+              <div className="absolute inset-0 bg-linear-to-b from-blue-500/5 to-sky-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
               
-              {/* Heatmap Legend */}
-              <div className="w-full flex justify-end gap-1 mb-6 mr-4 relative z-10 text-[10px] text-slate-500 font-medium uppercase tracking-wider items-center">
-                  <span>Less</span>
-                  <div className="w-3 h-3 rounded-sm bg-slate-100 border border-slate-200 ml-1"></div>
-                  <div className="w-3 h-3 rounded-sm bg-sky-200"></div>
-                  <div className="w-3 h-3 rounded-sm bg-sky-400"></div>
-                  <div className="w-3 h-3 rounded-sm bg-blue-500"></div>
-                  <div className="w-3 h-3 rounded-sm bg-blue-700 mr-1"></div>
-                  <span>More</span>
+              {/* Decorative background flare */}
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-400/20 rounded-full blur-3xl group-hover:bg-blue-400/30 transition-colors duration-700"></div>
+              
+              <div className="w-full flex items-center justify-between mb-8 relative z-10">
+                  <h3 className="text-xl font-bold text-slate-800 flex items-center tracking-tight">
+                      <span className="bg-linear-to-br from-blue-100 to-sky-50 p-2.5 rounded-2xl mr-3 shadow-sm border border-blue-200/50">
+                          <Target className="text-blue-600" size={22} />
+                      </span>
+                      Consistency
+                  </h3>
+                  
+                  {/* Mini Stats Pill */}
+                  <div className="bg-white/80 px-3 py-1.5 rounded-xl border border-slate-200/60 shadow-sm flex items-center gap-2">
+                       <span className="relative flex h-2 w-2">
+                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                           <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                       </span>
+                       <span className="text-xs font-bold text-slate-600 uppercase tracking-widest">Live</span>
+                  </div>
+              </div>
+              
+              {/* Heatmap Legend - Elevated */}
+              <div className="w-full flex justify-between items-center mb-6 relative z-10 bg-slate-50/80 p-3 rounded-2xl border border-slate-100/80 shadow-inner">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-2">Activity</span>
+                  <div className="flex gap-1.5 items-center pr-1">
+                      <span className="text-[10px] font-semibold text-slate-400">Less</span>
+                      <div className="flex gap-1 mx-1">
+                          <div className="w-4 h-4 rounded-md bg-slate-100 border border-slate-200/60 shadow-sm"></div>
+                          <div className="w-4 h-4 rounded-md bg-[#bae6fd] shadow-sm"></div>
+                          <div className="w-4 h-4 rounded-md bg-[#38bdf8] shadow-sm"></div>
+                          <div className="w-4 h-4 rounded-md bg-[#3b82f6] shadow-sm"></div>
+                          <div className="w-4 h-4 rounded-md bg-[#1d4ed8] shadow-sm ring-1 ring-blue-700/20 ring-offset-1 ring-offset-slate-50"></div>
+                      </div>
+                      <span className="text-[10px] font-semibold text-slate-400">More</span>
+                  </div>
               </div>
 
-              <div className="relative z-10 w-full flex justify-center bg-white/80 rounded-2xl p-4 border border-slate-200 shadow-inner">
+              <div className="relative z-10 w-full flex-1 flex flex-col items-center justify-center bg-white/90 rounded-3xl p-6 border border-slate-200/80 shadow-sm transition-transform duration-500 group-hover:scale-[1.02]">
                   <Calendar
                       mode="single"
                       selected={date}
@@ -251,10 +271,10 @@ const Dashboard = () => {
                       locale={enGB}
                       className="text-lg pointer-events-auto font-medium"
                       classNames={{
-                          head_cell: "text-slate-400 font-bold uppercase text-xs tracking-wider",
+                          head_cell: "text-slate-400 font-extrabold uppercase text-[10px] tracking-widest pb-2",
                           cell: "text-center text-sm p-0 m-0 relative",
-                          day: "h-11 w-11 p-0 m-0.5 font-normal bg-slate-50 border border-slate-100 rounded-lg hover:bg-slate-200 transition-all duration-200",
-                          nav_button: "h-8 w-8 bg-white shadow-sm border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors",
+                          day: "h-10 w-10 p-0 m-0.5 font-semibold text-slate-600 bg-white border border-slate-100 rounded-full hover:bg-slate-50 hover:border-slate-300 hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm",
+                          nav_button: "h-8 w-8 bg-white shadow-sm border border-slate-200 rounded-full hover:bg-slate-50 hover:scale-105 transition-all text-slate-600",
                       }}
                       modifiers={{
                           level1,
@@ -266,13 +286,13 @@ const Dashboard = () => {
                           todaySelected: isTodaySelected && date ? [date]:[]
                       }}
                       modifiersClassNames={{
-                          level1: "!bg-sky-200 !text-sky-900 border-none font-medium hover:!bg-sky-300",
-                          level2: "!bg-sky-400 !text-sky-950 border-none font-semibold hover:!bg-sky-500 shadow-sm",
-                          level3: "!bg-blue-500 !text-white border-none font-bold hover:!bg-blue-600 shadow-md shadow-blue-500/20",
-                          level4: "!bg-blue-700 !text-white border-none font-black hover:!bg-blue-800 shadow-lg shadow-blue-700/30 transform transition-transform hover:scale-105 hover:z-10",
-                          today: "!bg-slate-100 !text-blue-600 font-black border-2 border-blue-200",
-                          selected: "ring-2 ring-slate-800 ring-offset-2 font-bold !bg-white z-10",
-                          todaySelected: "!bg-slate-800 !text-white font-bold ring-2 ring-slate-800 ring-offset-2 z-10"
+                          level1: "!bg-sky-100 !text-sky-900 !border-sky-200 hover:!bg-sky-200 shadow-inner hover:scale-110 hover:-rotate-3 transition-transform duration-300 z-10",
+                          level2: "!bg-sky-300 !text-sky-950 !border-sky-400 hover:!bg-sky-400 shadow-sm shadow-sky-300/30 hover:scale-110 hover:rotate-3 transition-transform duration-300 z-10",
+                          level3: "!bg-blue-500 !text-white !border-blue-600 hover:!bg-blue-600 shadow-md shadow-blue-500/40 hover:scale-110 hover:-rotate-3 transition-transform duration-300 z-10",
+                          level4: "!bg-blue-700 !text-white !border-blue-800 hover:!bg-blue-800 shadow-lg shadow-blue-700/50 hover:scale-110 hover:rotate-3 transition-transform duration-300 z-10",
+                          today: "!bg-slate-100 !text-blue-700 border-2 !border-blue-400 font-extrabold",
+                          selected: "ring-2 ring-slate-800 ring-offset-2 ring-offset-white font-bold !bg-white z-20 !scale-105",
+                          todaySelected: "!bg-slate-800 !text-white ring-2 ring-slate-800 ring-offset-2 ring-offset-white z-20 !scale-105 !border-transparent font-bold"
                       }}
                   />
               </div>

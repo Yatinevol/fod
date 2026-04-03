@@ -13,6 +13,12 @@ import { ApiResponse } from "@/Types/ApiResponse";
 import { GoalCompletionUI } from "@/model/GoalCompletion.model";
 import { format, toZonedTime } from "date-fns-tz";
 
+// --- Global Module Cache ---
+// Preserves state across component unmounts during SPA navigation
+const globalGoalCache: Record<string, { data: { id: string; title: string }[], timestamp: number }> = {};
+let globalCategoriesCache: { data: string[], timestamp: number } | null = null;
+let globalCompletedCache: { data: GoalCompletionUI[], timestamp: number } | null = null;
+const CACHE_DURATION = 1000 * 60 * 5; // 5 minutes
 
 const Goal = () => {
   // Remove unused loading state since it's never used for display
@@ -93,6 +99,14 @@ const handleAddTask =async () => {
 const handleGetTasks = async (category: string) => {
   try {
     setActive(category)
+    
+    // Check cache first
+    const now = Date.now();
+    if (globalGoalCache[category] && now - globalGoalCache[category].timestamp < CACHE_DURATION) {
+      setGoals(globalGoalCache[category].data);
+      return;
+    }
+
     const response = await axios.get(`/api/goal/category/${category}`)
 
     if(response.data.success){
@@ -101,6 +115,9 @@ const handleGetTasks = async (category: string) => {
       id: task._id,
       title: task.title
      }))
+      
+      // Update cache
+      globalGoalCache[category] = { data: categoryTasks, timestamp: now };
       setGoals([...categoryTasks])
     }else{
       toast("Failed to fetch tasks", {
@@ -122,6 +139,12 @@ const handleGetTasks = async (category: string) => {
 }
 const handleGetCategories = useCallback(async()=>{
     try {
+      const now = Date.now();
+      if (globalCategoriesCache && now - globalCategoriesCache.timestamp < CACHE_DURATION) {
+        setCategories(globalCategoriesCache.data);
+        return;
+      }
+
       const response = await axios.get<ApiResponse>('/api/category')
       if(response.data.success){
         
@@ -129,6 +152,7 @@ const handleGetCategories = useCallback(async()=>{
 
         const categoryNames = ["Today",...apiCategories.filter(each=>each!=="Today")]
 
+        globalCategoriesCache = { data: categoryNames, timestamp: now };
         setCategories(categoryNames);
       }
     } catch {
@@ -156,6 +180,8 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
     ])
     if(StatusRes.data.success){
       // Goal status updated successfully
+      // Invalidate global completion cache so it stays fresh
+      globalCompletedCache = null;
     }
   } catch {
     toast.error("Failed to update goal status");
@@ -164,6 +190,12 @@ const handleCheckbox = async(checked:boolean,goalId:string)=>{
 
 const handleGetTodaysGoalsCheckbox= useCallback(async()=>{
   try {
+    const nowTime = Date.now();
+    if (globalCompletedCache && nowTime - globalCompletedCache.timestamp < CACHE_DURATION) {
+      setGoalsCompleted(globalCompletedCache.data);
+      return;
+    }
+
     const timeZone = 'UTC';
     const now = new Date();
     const zonedDate =  toZonedTime(now, timeZone);
@@ -171,6 +203,7 @@ const handleGetTodaysGoalsCheckbox= useCallback(async()=>{
     const response = await axios.get<ApiResponse>(`/api/goal/goal-status?date=${existingDate}`)
     if(response.data.success){
       const completedToday = response.data.data as GoalCompletionUI[]
+      globalCompletedCache = { data: completedToday, timestamp: nowTime };
       setGoalsCompleted(completedToday)
     }
   } catch {
@@ -279,7 +312,7 @@ useEffect(()=>{
       {/* Right section: Buttons */}
       <div className="flex items-center gap-3">
         {/* Enhanced Add Category Section */}
-        <div className="flex items-center gap-2 border border-slate-200/60 rounded-xl bg-white shadow-xs overflow-hidden transition-all focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-300">
+        <div className="flex items-center gap-2 border border-slate-200/60 rounded-xl bg-white shadow-xs overflow-hidden transition-all focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-300">
           <div className="relative flex-1 min-w-35">
             <input
               type="text"
@@ -296,7 +329,7 @@ useEffect(()=>{
             />
           </div>
           <button 
-            className="px-4 py-2.5 text-violet-600 hover:bg-violet-50 hover:text-violet-700 transition-colors text-sm font-semibold border-l border-slate-200/60 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2.5 text-blue-600 hover:bg-blue-50 hover:text-blue-700 transition-colors text-sm font-semibold border-l border-slate-200/60 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleUiCategory}
             disabled={!category.trim() || categories.includes(category.trim())}
             title={
@@ -327,7 +360,7 @@ useEffect(()=>{
 
         <button
           onClick={() => setShowTaskModal(true)}
-          className="bg-linear-to-r from-violet-600 to-fuchsia-600 text-white px-5 py-2.5 rounded-xl font-bold shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2"
+          className="bg-linear-to-r from-blue-600 to-blue-500 text-white px-5 py-2.5 rounded-xl font-bold shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
@@ -339,7 +372,7 @@ useEffect(()=>{
     </header>
 
     {/* Category Tabs */}
-    <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide py-2 px-1">
+    <div className="flex items-center gap-3 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-2 px-1">
       {categories.map((each) => (
         <button
           key={each}
@@ -367,7 +400,7 @@ useEffect(()=>{
         <X size={20} />
       </button>
 
-      <h2 className="text-2xl font-extrabold mb-6 bg-clip-text text-transparent bg-linear-to-r from-violet-600 to-fuchsia-600">New Task</h2>
+      <h2 className="text-2xl font-extrabold mb-6 bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-blue-500">New Task</h2>
 
       {/* Task name input */}
       <div className="space-y-5">
@@ -378,7 +411,7 @@ useEffect(()=>{
             placeholder="e.g. Finish the presentation"
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
-            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all font-medium"
+            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
             autoFocus
           />
         </div>
@@ -389,7 +422,7 @@ useEffect(()=>{
           <select
             value={taskCategory}
             onChange={(e) => setTaskCategory(e.target.value)}
-            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all font-medium"
+            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
           >
             {categories.map((cat) => (
               <option key={cat} value={cat}>
@@ -402,7 +435,7 @@ useEffect(()=>{
         {/* Save button */}
         <button
           onClick={handleAddTask}
-          className="w-full bg-linear-to-r from-violet-600 to-fuchsia-600 text-white py-4 rounded-xl font-bold shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all mt-2"
+          className="w-full bg-linear-to-r from-blue-600 to-blue-500 text-white py-4 rounded-xl font-bold shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all mt-2"
         >
           Create Task
         </button>
@@ -415,12 +448,12 @@ useEffect(()=>{
 <div className="mt-8 space-y-3 pb-24">
   {goals.length === 0 ? (
     <div className="text-center bg-white/50 backdrop-blur-sm border border-slate-200/50 rounded-3xl py-16 px-6 shadow-sm">
-      <div className="bg-violet-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-        <svg className="w-10 h-10 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      <div className="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
       </div>
       <p className="text-xl font-bold text-slate-800 mb-2">No tasks in "{active}"</p>
       <p className="text-slate-500 mb-6">You're all caught up! Time to relax or start something new.</p>
-      <button onClick={() => setShowTaskModal(true)} className="text-violet-600 font-bold hover:text-violet-700 hover:underline">
+      <button onClick={() => setShowTaskModal(true)} className="text-blue-600 font-bold hover:text-blue-700 hover:underline">
         + Add your first task here
       </button>
     </div>
@@ -430,12 +463,17 @@ useEffect(()=>{
       
         <div
           key={task.id}
-          className={`group flex items-center justify-between p-4 pl-5 rounded-2xl shadow-xs border transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${
+          className={`group flex items-center justify-between p-5 rounded-3xl border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative overflow-hidden backdrop-blur-xl ${
             goalsCompleted.some(c => String(c.goalId) === task.id && c.isCompleted) 
-              ? "bg-slate-50 border-slate-200 opacity-75" 
-              : "bg-white border-white hover:border-violet-100"
+              ? "bg-slate-100/50 border-slate-200/60 shadow-inner scale-[0.99] grayscale-20" 
+              : "bg-white/80 border-slate-200/50 shadow-lg shadow-slate-200/30 hover:border-blue-200/80 cursor-pointer"
           }`}
         >
+          {/* Subtle background glow for uncompleted tasks */}
+          {!goalsCompleted.some(c => String(c.goalId) === task.id && c.isCompleted) && (
+            <div className="absolute inset-0 bg-linear-to-r from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+          )}
+          
           <FormControlLabel
             className="flex-1 m-0"
             control={
@@ -447,7 +485,7 @@ useEffect(()=>{
                 sx={{
                   color: '#cbd5e1',
                   '& .MuiSvgIcon-root': { fontSize: 28 },
-                  '&.Mui-checked': { color: '#8b5cf6' },
+                  '&.Mui-checked': { color: '#3b82f6' },
                 }}
               />
             }
@@ -477,7 +515,7 @@ useEffect(()=>{
                   onClick={() => handleEditClick(task)}
                   className="w-full px-4 py-2 text-left text-sm font-semibold hover:bg-slate-50 flex items-center gap-3 text-slate-700 transition"
                 >
-                  <Pencil size={16} className="text-violet-500" />
+                  <Pencil size={16} className="text-blue-500" />
                   Rename
                 </button>
                 <button
@@ -517,7 +555,7 @@ useEffect(()=>{
         placeholder="Enter new task name..."
         value={editTaskTitle}
         onChange={(e) => setEditTaskTitle(e.target.value)}
-        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-all font-medium mb-6"
+        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium mb-6"
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
@@ -541,7 +579,7 @@ useEffect(()=>{
         <button
           onClick={handleRenameTask}
           disabled={!editTaskTitle.trim() || editTaskTitle.trim() === editingTask.title || isEditing}
-          className="flex-1 bg-violet-600 text-white py-3 rounded-xl font-bold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-md"
+          className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-md"
         >
           {isEditing ? "Saving..." : "Save Changes"}
         </button>
