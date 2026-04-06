@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { dbConnect } from "@/lib/dbConnect";
 import CalendarTickModel from "@/model/CalendarTick.model";
+import GoalModel from "@/model/Goal.model"; // Ensure GoalModel is registered before population
 import mongoose from "mongoose";
 import { User } from "next-auth";
 
