@@ -84,8 +84,11 @@ const handleAddTask =async () => {
   
       if(response.data.success){
         toast("Task added successfully")
+        // Invalidate cache to force a fresh fetch
+        delete globalGoalCache[taskCategory];
+        // Fetch and show the active category updated
+        handleGetTasks(taskCategory);
       }
-      setActive(taskCategory);
     }
   } catch (error) {
     const axiosError = error as AxiosError<ApiResponse>
@@ -248,9 +251,16 @@ const handleRenameTask = async () => {
     });
     
     if (response.data.success) {
-      setGoals(prev => prev.map(goal => 
-        goal.id === editingTask.id ? { ...goal, title: editTaskTitle.trim() } : goal
-      ));
+      setGoals(prev => {
+        const updated = prev.map(goal => 
+          goal.id === editingTask.id ? { ...goal, title: editTaskTitle.trim() } : goal
+        );
+        // Sync local cache
+        if (globalGoalCache[active]) {
+          globalGoalCache[active].data = updated;
+        }
+        return updated;
+      });
       toast.success("Task renamed successfully");
       setShowEditModal(false);
       setEditingTask(null);
@@ -273,7 +283,14 @@ const handleDeleteTask = async () => {
     const response = await axios.delete<ApiResponse>(`/api/goal/${editingTask.id}`);
     
     if (response.data.success) {
-      setGoals(prev => prev.filter(goal => goal.id !== editingTask.id));
+      setGoals(prev => {
+        const filtered = prev.filter(goal => goal.id !== editingTask.id);
+        // Keep our global cache in sync so it doesn't reappear on render
+        if (globalGoalCache[active]) {
+          globalGoalCache[active].data = filtered;
+        }
+        return filtered;
+      });
       toast.success("Task deleted successfully");
       setShowDeleteModal(false);
       setEditingTask(null);
@@ -463,7 +480,9 @@ useEffect(()=>{
       
         <div
           key={task.id}
-          className={`group flex items-center justify-between p-5 rounded-3xl border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative overflow-hidden backdrop-blur-xl ${
+          className={`group flex items-center justify-between p-5 rounded-3xl border transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative backdrop-blur-xl ${
+            openMenuId === task.id ? "z-50" : "z-0 hover:z-10"
+          } ${
             goalsCompleted.some(c => String(c.goalId) === task.id && c.isCompleted) 
               ? "bg-slate-100/50 border-slate-200/60 shadow-inner scale-[0.99] grayscale-20" 
               : "bg-white/80 border-slate-200/50 shadow-lg shadow-slate-200/30 hover:border-blue-200/80 cursor-pointer"
@@ -471,11 +490,13 @@ useEffect(()=>{
         >
           {/* Subtle background glow for uncompleted tasks */}
           {!goalsCompleted.some(c => String(c.goalId) === task.id && c.isCompleted) && (
-            <div className="absolute inset-0 bg-linear-to-r from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+            <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none -z-10">
+              <div className="absolute inset-0 bg-linear-to-r from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            </div>
           )}
           
           <FormControlLabel
-            className="flex-1 m-0"
+            className="flex-1 m-0 z-10"
             control={
               <Checkbox
                 checked={goalsCompleted.some((c)=>(
@@ -500,31 +521,41 @@ useEffect(()=>{
             }
           />
           {/* Dropdown Menu */}
-          <div className="relative opacity-0 group-hover:opacity-100 transition-opacity duration-200" ref={openMenuId === task.id ? menuRef : null}>
+          <div className={`relative transition-opacity duration-200 z-50 ${openMenuId === task.id ? 'opacity-100' : 'opacity-100 md:opacity-0 group-hover:opacity-100'}`} ref={openMenuId === task.id ? menuRef : null}>
             <button
               onClick={() => setOpenMenuId(openMenuId === task.id ? null : task.id)}
-              className="p-2 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+              className={`p-2 rounded-xl transition cursor-pointer flex items-center justify-center ${openMenuId === task.id ? 'bg-blue-100 text-blue-600 shadow-inner' : 'hover:bg-slate-100 text-slate-400 hover:text-slate-600'}`}
+              aria-label="Options"
             >
-              <MoreHorizontal className="text-slate-400" />
+              <MoreHorizontal size={20} />
             </button>
             
             {/* Dropdown Options */}
             {openMenuId === task.id && (
-              <div className="absolute right-0 top-12 bg-white border border-slate-100 rounded-xl shadow-xl py-2 z-10 w-40 transform origin-top-right transition-all">
-                <button
-                  onClick={() => handleEditClick(task)}
-                  className="w-full px-4 py-2 text-left text-sm font-semibold hover:bg-slate-50 flex items-center gap-3 text-slate-700 transition"
-                >
-                  <Pencil size={16} className="text-blue-500" />
-                  Rename
-                </button>
-                <button
-                  onClick={() => handleDeleteClick(task)}
-                  className="w-full px-4 py-2 text-left text-sm font-semibold hover:bg-red-50 flex items-center gap-3 text-red-600 transition"
-                >
-                  <Trash2 size={16} />
-                  Delete
-                </button>
+              <div className="absolute right-0 mt-2 bg-white/95 backdrop-blur-2xl border border-slate-200/80 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] z-100 w-48 transform origin-top-right transition-all animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-4 py-2 border-b border-slate-100/80">
+                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Task actions</p>
+                </div>
+                <div className="p-1.5 space-y-1">
+                  <button
+                    onClick={() => handleEditClick(task)}
+                    className="w-full px-3 py-2 text-left text-sm font-bold hover:bg-blue-50 rounded-xl flex items-center gap-3 text-slate-700 hover:text-blue-700 transition-colors group/btn"
+                  >
+                    <div className="bg-slate-100 group-hover/btn:bg-blue-100/50 p-1.5 rounded-lg transition-colors">
+                      <Pencil size={15} className="text-slate-500 group-hover/btn:text-blue-600 transition-colors" />
+                    </div>
+                    Rename
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(task)}
+                    className="w-full px-3 py-2 text-left text-sm font-bold hover:bg-red-50 rounded-xl flex items-center gap-3 text-slate-700 hover:text-red-600 transition-colors group/btn"
+                  >
+                    <div className="bg-slate-100 group-hover/btn:bg-red-100/50 p-1.5 rounded-lg transition-colors">
+                      <Trash2 size={15} className="text-slate-500 group-hover/btn:text-red-600 transition-colors" />
+                    </div>
+                    Delete
+                  </button>
+                </div>
               </div>
             )}
           </div>
