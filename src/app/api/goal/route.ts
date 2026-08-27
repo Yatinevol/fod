@@ -20,7 +20,7 @@ export async function POST(request:NextRequest) {
 
         const user:User = session.user 
         
-        const {title, category} = await request.json()
+        const {title, category, deadline, estimatedMinutes, taskType, boardLane} = await request.json()
         if (!title || !category) {
             return Response.json({
               success: false,
@@ -29,7 +29,7 @@ export async function POST(request:NextRequest) {
           }
       
 
-        const goalExist = await GoalModel.findOne({title})
+        const goalExist = await GoalModel.findOne({title, userId: user._id})
         if(goalExist){
             return Response.json({
                 success: false,
@@ -41,7 +41,13 @@ export async function POST(request:NextRequest) {
             title,
             category,
             userId: user._id,
-            isActive: true
+            isActive: true,
+            deadline: deadline || "",
+            estimatedMinutes: estimatedMinutes || 25,
+            taskType: taskType || category,
+            boardLane: boardLane || "later",
+            lanePinned: false,
+            status: "open",
         })
 
        return Response.json({

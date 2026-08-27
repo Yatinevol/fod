@@ -1,48 +1,53 @@
-import mongoose,{Schema, Types} from "mongoose";
+import mongoose, { Schema, Types } from "mongoose";
 import { User } from "./User.model";
 import { GoalI } from "./Goal.model";
 
-
-export interface CalendarTick{
-    userId: Types.ObjectId | User; 
-    date: Date;
-    goals: Types.ObjectId[]
-    earnedGreenTick: boolean;
-    createdAt?: Date;
-    activitiesCompleted?: number
+export interface CalendarTick {
+  userId: Types.ObjectId | User;
+  date: string;
+  goals: Types.ObjectId[];
+  earnedGreenTick: boolean;
+  createdAt?: Date;
+  activitiesCompleted?: number;
 }
-export interface PopulatedCalendarGoalI{
-    userId: Types.ObjectId | User; 
-    date: Date;
-    goals: GoalI[]
-    earnedGreenTick: boolean;
-    createdAt?: Date;
-    activitiesCompleted?: number
+export interface PopulatedCalendarGoalI {
+  userId: Types.ObjectId | User;
+  date: string | Date;
+  goals: GoalI[];
+  earnedGreenTick: boolean;
+  createdAt?: Date;
+  activitiesCompleted?: number;
 }
 
-const CalenderTickSchema = new Schema<CalendarTick>({
+const CalenderTickSchema = new Schema<CalendarTick>(
+  {
     userId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    goals:[{
+    goals: [
+      {
         type: Schema.Types.ObjectId,
-        ref: "Goal"
-    }],
-    date:{
-        type: Date,
-        required: true
+        ref: "Goal",
+      },
+    ],
+    date: {
+      type: String,
+      required: true,
     },
     earnedGreenTick: {
-        type: Boolean,
-        required:true,
-        default: false
-
+      type: Boolean,
+      required: true,
+      default: false,
     },
-    activitiesCompleted:{
-        type:Number,
-        default: 0
-    }
-},{timestamps:true})
-export default (mongoose.models.CalendarTick as mongoose.Model<CalendarTick>) || (mongoose.model("CalendarTick",CalenderTickSchema))
+    activitiesCompleted: {
+      type: Number,
+      default: 0,
+    },
+  },
+  { timestamps: true }
+);
+
+export default (mongoose.models.CalendarTick as mongoose.Model<CalendarTick>) ||
+  mongoose.model("CalendarTick", CalenderTickSchema);

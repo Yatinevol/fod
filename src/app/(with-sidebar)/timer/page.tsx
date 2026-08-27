@@ -234,6 +234,49 @@
         }
         const totalSecsRef = useRef(0); 
         const initialTimeRef = useRef(0);
+        const focusSessionIdRef = useRef<string | null>(null);
+        const sessionStartedAtRef = useRef<number | null>(null);
+
+        const startFocusSession = async () => {
+            if (focusSessionIdRef.current) return;
+            try {
+                const res = await axios.post("/api/focus-session", { action: "start" });
+                focusSessionIdRef.current = res.data.sessionId;
+                sessionStartedAtRef.current = Date.now();
+            } catch {
+                // non-blocking telemetry
+            }
+        };
+
+        const endFocusSession = async (outcome: "finish" | "abandon") => {
+            if (!focusSessionIdRef.current) return;
+            const elapsed = sessionStartedAtRef.current
+                ? Math.max(1, Math.floor((Date.now() - sessionStartedAtRef.current) / 60000))
+                : 0;
+            try {
+                await axios.post("/api/focus-session", {
+                    action: outcome === "finish" ? "finish" : "abandon",
+                    sessionId: focusSessionIdRef.current,
+                    durationMinutes: elapsed,
+                });
+            } catch {
+                // non-blocking
+            }
+            focusSessionIdRef.current = null;
+            sessionStartedAtRef.current = null;
+        };
+
+        const pauseFocusSession = async () => {
+            if (!focusSessionIdRef.current) return;
+            try {
+                await axios.post("/api/focus-session", {
+                    action: "pause",
+                    sessionId: focusSessionIdRef.current,
+                });
+            } catch {
+                // non-blocking
+            }
+        };
 
         // Restore timer from local storage on mount
         useEffect(() => {
@@ -281,10 +324,11 @@
                         totalSecsRef.current = Math.max(0, Math.floor((endTime - now) / 1000));
                         
                         if (totalSecsRef.current <= 0) {
-                            const updateProgress = initialTimeRef.current - totalSecsRef.current
-                            const updateProgressInMins  = Math.floor(updateProgress/60)
-                            const newFocusM = updateProgressInMins + focusedMinutes
-                            setFocusedMinutes((prev)=> prev + updateProgressInMins)
+                        const updateProgress = initialTimeRef.current - totalSecsRef.current
+                        const updateProgressInMins  = Math.floor(updateProgress/60)
+                        const newFocusM = updateProgressInMins + focusedMinutes
+                        setFocusedMinutes((prev)=> prev + updateProgressInMins)
+                        void endFocusSession("finish");
                             if(isSessionActive && sessionId){
                                 handleUpdateProgress(newFocusM)
                             }else{
@@ -326,12 +370,13 @@
                     timerRef.current = null;
                 }
                 setIsPlaying(false);
-                // Calculate remaining time and store it as frozen or clear
+                void pauseFocusSession();
                 localStorage.removeItem('fod_timer_end_time');
                 localStorage.removeItem('fod_timer_initial_time');
             } else {
                 const totalSecs = workHr * 3600 + workMin * 60 + workSec;
                 setIsPlaying(true);
+                void startFocusSession();
                 
                 totalSecsRef.current = totalSecs;
                 initialTimeRef.current = totalSecs;
@@ -344,11 +389,12 @@
                     const now = Date.now();
                     totalSecsRef.current = Math.max(0, Math.floor((endTime - now) / 1000));
                     
-                    if (totalSecsRef.current <= 0) {
+                        if (totalSecsRef.current <= 0) {
                         const updateProgress = initialTimeRef.current - totalSecsRef.current
                         const updateProgressInMins  = Math.floor(updateProgress/60)
                         const newFocusM = updateProgressInMins + focusedMinutes
                         setFocusedMinutes((prev)=> prev + updateProgressInMins)
+                        void endFocusSession("finish");
                         if(isSessionActive && sessionId){
                             handleUpdateProgress(newFocusM)
                         }else{
@@ -387,6 +433,7 @@
         }, []);
         
         const handleSkipTimer = ()=>{
+            void endFocusSession("finish");
             let updateProgress = initialTimeRef.current - totalSecsRef.current
             updateProgress  = Math.floor(updateProgress/3600)
             setFocusedMinutes((prev)=> prev + updateProgress) 
@@ -406,6 +453,7 @@
         }
 
         const handleResetTimer = ()=>{
+            void endFocusSession("abandon");
             let updateProgress = initialTimeRef.current - totalSecsRef.current
             updateProgress  = Math.floor(updateProgress/3600)
             setFocusedMinutes((prev)=> prev + updateProgress)   

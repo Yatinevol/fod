@@ -1,109 +1,73 @@
-// this route is for patch/update the goal or delete the goal.
-
-import { auth } from "@/auth";
-import { dbConnect } from "@/lib/dbConnect";
-import GoalModel from "@/model/Goal.model";
-import { User } from "next-auth";
 import { NextRequest } from "next/server";
+import { requireUser } from "@/lib/requireUser";
+import GoalModel from "@/model/Goal.model";
 
+export async function DELETE(
+  _request: NextRequest,
+  context: { params: Promise<{ goalId: string }> }
+) {
+  const { goalId } = await context.params;
+  const auth = await requireUser();
+  if (!auth.ok) return auth.response;
 
-export async function DELETE(request:NextRequest,context:{params: Promise<{goalId:string}>}) {
-    const {goalId} = await context.params
-    await dbConnect()
-
-    try {
-        const session = await auth()
-        if(!session || !session.user){
-            return Response.json({
-                success: false,
-                message: "Not Authenticated"
-            },{status: 400})
-        }
-
-        const user:User = session.user
-
-        const goalFound = await GoalModel.findOneAndDelete({_id: goalId, userId: user._id})
-
-        if(!goalFound){
-            return Response.json({
-                success: false,
-                message: "Goal not found or already deleted"
-            },{status: 404})
-        }
-
-        return Response.json({
-            success: true,
-            message: "Goal deleted"
-        },{status: 200})
-    } catch {
-        return Response.json({
-            success: false,
-            message: "Error deleting message"
-        },{status: 500})
-    }
+  const goalFound = await GoalModel.findOneAndDelete({ _id: goalId, userId: auth.userId });
+  if (!goalFound) {
+    return Response.json(
+      { success: false, message: "Goal not found or already deleted" },
+      { status: 404 }
+    );
+  }
+  return Response.json({ success: true, message: "Goal deleted" });
 }
 
-export async function PATCH(request:NextRequest,context:{params:Promise<{goalId:string}>}) {
-    const {goalId} = await context.params
-    const {isActive, title} = await request.json()
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ goalId: string }> }
+) {
+  const { goalId } = await context.params;
+  const auth = await requireUser();
+  if (!auth.ok) return auth.response;
 
-    await dbConnect()
-    try {
-        const session = await auth()
-        if(!session || !session.user){
-            return Response.json({
-                success: false,
-                message: "Not Authenticated"
-            },{status: 400})
-        }
+  const body = await request.json();
+  const update: Record<string, unknown> = {};
 
-        const user:User = session.user
+  if (body.isActive !== undefined) update.isActive = body.isActive;
+  if (body.title !== undefined) update.title = body.title;
+  if (body.deadline !== undefined) update.deadline = body.deadline;
+  if (body.estimatedMinutes !== undefined) update.estimatedMinutes = body.estimatedMinutes;
+  if (body.taskType !== undefined) update.taskType = body.taskType;
+  if (body.status !== undefined) update.status = body.status;
+  if (body.boardLane !== undefined) {
+    update.boardLane = body.boardLane;
+    update.lanePinned = body.lanePinned !== undefined ? body.lanePinned : true;
+  }
+  if (body.lanePinned !== undefined && body.boardLane === undefined) {
+    update.lanePinned = body.lanePinned;
+  }
 
-        const update: Record<string, unknown> = {}
-        // an array to return values if they are defined:
-        const updatedFields = []
+  if (Object.keys(update).length === 0) {
+    return Response.json(
+      { success: false, message: "Nothing found to update" },
+      { status: 400 }
+    );
+  }
 
-        if(isActive !== undefined) {
-            update.isActive = isActive 
-            updatedFields.push("status")
-        }
-        if(title !== undefined) {
-            update.title = title
-            updatedFields.push("Title")
-            
-        }
+  const updatedGoal = await GoalModel.findOneAndUpdate(
+    { _id: goalId, userId: auth.userId },
+    { $set: update },
+    { new: true }
+  );
 
-        if(!title && !isActive){
-            return Response.json({
-                success: false,
-                message: "Nothing found to update"
-            },{status: 400})
-        }
-        const updatedGoal = await GoalModel.findOneAndUpdate({
-            _id: goalId,
-            userId : user._id
-        },{
-            $set: update
-        },
-        {
-            new: true
-        })
+  if (!updatedGoal) {
+    return Response.json(
+      { success: false, message: "Goal not found" },
+      { status: 404 }
+    );
+  }
 
-        if(!updatedGoal){
-            return Response.json({
-            success: false,
-            message: "Nothing found to update"
-            },{status: 400})
-        }
-
-        return Response.json({
-            success: true,
-            message: `Updated ${updatedFields.join(" and ")} successfully`
-        },{status: 200})
-    } catch {
-        return Response.json({
-            success: false,
-            message: "Nothing found to update"
-            },{status: 500})
-    }
+  return Response.json({
+    success: true,
+    message: "Goal updated",
+    data: updatedGoal,
+  });
 }
