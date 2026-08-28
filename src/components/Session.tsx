@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface Participant {
+export interface Participant {
     userId: undefined | string;
     username: string;
     totalFocusMinutes: number;

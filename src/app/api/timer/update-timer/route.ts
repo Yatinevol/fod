@@ -13,52 +13,36 @@ export async function POST(request: NextRequest) {
     }
     await dbConnect();
     const user: User = session.user;
-    const { goalTHr, goalWeekHr, isWeekly, focusedMinutes } = await request.json();
-    const today = new Date();
+    const body = await request.json();
+    const isWeekly = Boolean(body.isWeekly);
+    const focusedMinutes =
+      typeof body.focusedMinutes === "number" ? body.focusedMinutes : undefined;
+    const targetMinutes =
+      typeof body.targetMinutes === "number" ? body.targetMinutes : undefined;
 
-    if (isWeekly) {
-      const weekKey = weekEndDateKey(today);
-      const updatedWeekGoal = await TimerModel.findOneAndUpdate(
-        { userId: user._id, date: weekKey, isWeekly: true },
-        {
-          $set: {
-            targetMinutes: goalWeekHr,
-            totalFocusMinutes: focusedMinutes,
-          },
-          $setOnInsert: {
-            userId: user._id,
-            date: weekKey,
-            isWeekly: true,
-          },
-        },
-        { new: true, upsert: true }
-      );
-
+    if (focusedMinutes == null && targetMinutes == null) {
       return Response.json(
-        {
-          success: true,
-          message: "Weekly goal updated successfully",
-          weekGoal: updatedWeekGoal,
-          goalWeekHr,
-          goalEnd: weekKey,
-          totalFocuMinutes: updatedWeekGoal.totalFocusMinutes,
-        },
-        { status: 200 }
+        { success: false, message: "Nothing to update" },
+        { status: 400 }
       );
     }
 
-    const dayKey = localDateKey(today);
-    const updatedGoal = await TimerModel.findOneAndUpdate(
-      { userId: user._id, date: dayKey, isWeekly: false },
+    const $set: Record<string, number> = {};
+    if (focusedMinutes != null) $set.totalFocusMinutes = Math.max(0, focusedMinutes);
+    if (targetMinutes != null) $set.targetMinutes = Math.max(0, targetMinutes);
+
+    const dateKey = isWeekly ? weekEndDateKey() : localDateKey();
+
+    const updated = await TimerModel.findOneAndUpdate(
+      { userId: user._id, date: dateKey, isWeekly },
       {
-        $set: {
-          targetMinutes: goalTHr,
-          totalFocusMinutes: focusedMinutes,
-        },
+        $set,
         $setOnInsert: {
           userId: user._id,
-          date: dayKey,
-          isWeekly: false,
+          date: dateKey,
+          isWeekly,
+          ...(targetMinutes == null ? { targetMinutes: 0 } : {}),
+          ...(focusedMinutes == null ? { totalFocusMinutes: 0 } : {}),
         },
       },
       { new: true, upsert: true }
@@ -67,10 +51,14 @@ export async function POST(request: NextRequest) {
     return Response.json(
       {
         success: true,
-        message: "Today Goal updated successfully",
-        todayGoal: updatedGoal,
-        goalTHr: updatedGoal?.targetMinutes,
-        focusedMinutes: updatedGoal?.totalFocusMinutes,
+        message: isWeekly
+          ? "Weekly goal updated successfully"
+          : "Today Goal updated successfully",
+        todayGoal: isWeekly ? undefined : updated,
+        weekGoal: isWeekly ? updated : undefined,
+        focusedMinutes: updated.totalFocusMinutes,
+        targetMinutes: updated.targetMinutes,
+        totalFocuMinutes: updated.totalFocusMinutes,
       },
       { status: 200 }
     );
