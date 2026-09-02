@@ -6,6 +6,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const COUNTDOWN_KEY = "fod_countdown";
 const SETTINGS_KEY = "fod_timer_settings";
 
+const DEFAULT_SETTINGS = { workHr: 0, workMin: 25, workSec: 0, breakTime: 5 };
+const DEFAULT_SECONDS = hmsToSeconds(0, 25, 0);
+
 type CountdownPersist = {
   remaining: number;
   initial: number;
@@ -20,11 +23,9 @@ type SettingsPersist = {
 };
 
 function loadSettings(): SettingsPersist {
-  const fallback = { workHr: 0, workMin: 25, workSec: 0, breakTime: 5 };
-  if (typeof window === "undefined") return fallback;
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
-    if (!raw) return fallback;
+    if (!raw) return DEFAULT_SETTINGS;
     const parsed = JSON.parse(raw) as SettingsPersist;
     return {
       workHr: parsed.workHr ?? 0,
@@ -33,7 +34,7 @@ function loadSettings(): SettingsPersist {
       breakTime: parsed.breakTime ?? 5,
     };
   } catch {
-    return fallback;
+    return DEFAULT_SETTINGS;
   }
 }
 
@@ -41,24 +42,21 @@ export function useCountdownTimer(onComplete: (elapsedMinutes: number) => void) 
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
-  const settings = useRef(loadSettings());
-  const [breakTime, setBreakTime] = useState(settings.current.breakTime);
-  const [savedHr, setSavedHr] = useState(settings.current.workHr);
-  const [savedMin, setSavedMin] = useState(settings.current.workMin);
-  const [savedSec, setSavedSec] = useState(settings.current.workSec);
+  const [breakTime, setBreakTime] = useState(DEFAULT_SETTINGS.breakTime);
+  const [savedHr, setSavedHr] = useState(DEFAULT_SETTINGS.workHr);
+  const [savedMin, setSavedMin] = useState(DEFAULT_SETTINGS.workMin);
+  const [savedSec, setSavedSec] = useState(DEFAULT_SETTINGS.workSec);
 
-  const [draftHr, setDraftHr] = useState(settings.current.workHr);
-  const [draftMin, setDraftMin] = useState(settings.current.workMin);
-  const [draftSec, setDraftSec] = useState(settings.current.workSec);
+  const [draftHr, setDraftHr] = useState(DEFAULT_SETTINGS.workHr);
+  const [draftMin, setDraftMin] = useState(DEFAULT_SETTINGS.workMin);
+  const [draftSec, setDraftSec] = useState(DEFAULT_SETTINGS.workSec);
   const [isEditingTimer, setIsEditingTimer] = useState(false);
 
-  const initialRef = useRef(hmsToSeconds(settings.current.workHr, settings.current.workMin, settings.current.workSec));
+  const initialRef = useRef(DEFAULT_SECONDS);
   const endAtRef = useRef<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const [remainingSeconds, setRemainingSeconds] = useState(() =>
-    hmsToSeconds(settings.current.workHr, settings.current.workMin, settings.current.workSec)
-  );
+  const [remainingSeconds, setRemainingSeconds] = useState(DEFAULT_SECONDS);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const persist = useCallback((remaining: number, initial: number, endAt: number | null) => {
@@ -103,6 +101,15 @@ export function useCountdownTimer(onComplete: (elapsedMinutes: number) => void) 
   }, [stopInterval, tick]);
 
   useEffect(() => {
+    const settings = loadSettings();
+    setBreakTime(settings.breakTime);
+    setSavedHr(settings.workHr);
+    setSavedMin(settings.workMin);
+    setSavedSec(settings.workSec);
+    setDraftHr(settings.workHr);
+    setDraftMin(settings.workMin);
+    setDraftSec(settings.workSec);
+
     const saved = localStorage.getItem(COUNTDOWN_KEY);
     if (saved) {
       try {
@@ -127,13 +134,25 @@ export function useCountdownTimer(onComplete: (elapsedMinutes: number) => void) 
           endAtRef.current = null;
           setRemainingSeconds(parsed.remaining);
           setIsPlaying(false);
+        } else {
+          const secs = hmsToSeconds(settings.workHr, settings.workMin, settings.workSec);
+          initialRef.current = secs;
+          setRemainingSeconds(secs);
         }
       } catch {
         localStorage.removeItem(COUNTDOWN_KEY);
+        const secs = hmsToSeconds(settings.workHr, settings.workMin, settings.workSec);
+        initialRef.current = secs;
+        setRemainingSeconds(secs);
       }
+    } else {
+      const secs = hmsToSeconds(settings.workHr, settings.workMin, settings.workSec);
+      initialRef.current = secs;
+      setRemainingSeconds(secs);
     }
+
     return () => stopInterval();
-    // Restore once on mount; tick uses refs.
+    // Restore after mount so SSR HTML matches (always 25:00 first).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

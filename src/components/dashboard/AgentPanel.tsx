@@ -1,6 +1,7 @@
 "use client";
 
 import { AgentDraft } from "@/Types/Dashboard";
+import { AGENT_EXAMPLE_CHIPS } from "@/lib/agentExamples";
 import axios from "axios";
 import { Bot, Loader2, Send, Sparkles } from "lucide-react";
 import { useState } from "react";
@@ -82,6 +83,22 @@ export default function AgentPanel({ onApplied }: { onApplied: () => void }) {
           {cronLoading ? "Running…" : "Run daily agent"}
         </button>
       </div>
+
+      <div className="flex gap-2 mb-2 flex-wrap">
+        {AGENT_EXAMPLE_CHIPS.map((ex) => (
+          <button
+            key={ex.label}
+            type="button"
+            onClick={() => setMessage(ex.prompt)}
+            className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-violet-50 text-violet-800 border border-violet-100 hover:bg-violet-100"
+          >
+            {ex.label}
+          </button>
+        ))}
+      </div>
+      <p className="text-[11px] text-slate-400 mb-3">
+        Click a chip to fill the box, edit, then send. Approve the draft before tasks are created.
+      </p>
 
       <div className="flex gap-2 mb-3">
         <input
